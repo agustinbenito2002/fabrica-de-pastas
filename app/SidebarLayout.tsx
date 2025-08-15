@@ -60,7 +60,7 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
           borderBottom: "1px solid #eee",
           marginBottom: 8
         }}>
-          <img src="/welcome/logo-dark.svg" alt="Logo" style={{ height: 40, marginRight: 8 }} />
+          <img src="/logo.jpg" alt="Logo" style={{ height: 40, marginRight: 8 }} />
           <span style={{ fontWeight: "bold", fontSize: 18, color: "#333" }}>
             Fabrica de Pastas 2025
           </span>
