@@ -7,6 +7,7 @@ export default function Dashboard() {
 			<Menu>
 				<Menu.Item key="add" onClick={() => alert("Agregar cliente")}>Agregar Cliente</Menu.Item>
 				<Menu.Item key="edit" onClick={() => alert("Modificar cliente")}>Modificar Cliente</Menu.Item>
+				<Menu.Item key="list" onClick={() => alert("Listado de clientes")}>Listado de Clientes</Menu.Item>
 			</Menu>
 		);
 
@@ -29,6 +30,7 @@ export default function Dashboard() {
 				<Menu.Item key="add" onClick={() => alert("Agregar proveedor")}>Agregar comprovante de compra</Menu.Item>
 				<Menu.Item key="edit" onClick={() => alert("Modificar proveedor")}>Modificar Proveedor</Menu.Item>
 				<Menu.Item key="edit" onClick={() => alert("crear presupuesto")}>Crear Presupuesto</Menu.Item>
+				<Menu.Item key="edit" onClick={() => alert("registrar comprovante de venta")}>Registrar Comprovante de Venta</Menu.Item>
 			</Menu>
 		);
 
