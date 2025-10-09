@@ -85,7 +85,7 @@ const ClientesPage: React.FC = () => {
 			<h1>Listado de Clientes</h1>
 			<button
 				onClick={() => setShowForm(true)}
-				style={{ marginBottom: 16, padding: "8px 16px", fontSize: 16 }}
+				style={{ marginBottom: 16, padding: "8px 16px", fontSize: 16 , color: "#fff", background: "#1890ff", border: "none", borderRadius: 4, cursor: "pointer"}}
 			>
 				Agregar Cliente
 			</button>
