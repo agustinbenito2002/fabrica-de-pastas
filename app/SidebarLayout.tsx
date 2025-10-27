@@ -1,13 +1,13 @@
-import React from "react";
+import React, { useState } from "react";
 import { Layout, Menu } from "antd";
-// ...existing code...
 import {
   DashboardOutlined,
-  AppstoreOutlined,
   ShoppingOutlined,
   UserOutlined,
   SettingOutlined,
 } from "@ant-design/icons";
+import MateriasPage from "./routes/materias";
+import ProductosPage from "./routes/productos";
 
 const { Sider, Content } = Layout;
 
@@ -16,15 +16,6 @@ const menuItems = [
     key: "dashboard",
     icon: <DashboardOutlined />,
     label: "Dashboard",
-  },
-  {
-    key: "produccion",
-    icon: <AppstoreOutlined />,
-    label: "Producción",
-    children: [
-      { key: "ordenes", label: "Órdenes" },
-      { key: "maquinas", label: "Máquinas" },
-    ],
   },
   {
     key: "inventario",
@@ -48,32 +39,63 @@ const menuItems = [
 ];
 
 export function SidebarLayout({ children }: { children: React.ReactNode }) {
+  const [collapsed, setCollapsed] = useState(false);
+  const [currentPage, setCurrentPage] = useState("dashboard");
+
+  const handleMenuClick = ({ key }: { key: string }) => {
+    setCurrentPage(key);
+  };
+
+  const renderContent = () => {
+    switch (currentPage) {
+      case "materia-prima":
+        return <MateriasPage />;
+      case "productos":
+        return <ProductosPage />;
+      default:
+        return children;
+    }
+  };
+
   return (
     <Layout style={{ minHeight: "100vh" }}>
-      <Sider theme="light" collapsible>
-        <div style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          height: 64,
-          padding: "0 8px",
-          borderBottom: "1px solid #eee",
-          marginBottom: 8
-        }}>
-          <img src="/logo.jpg" alt="Logo" style={{ height: 40, marginRight: 8 }} />
-          <span style={{ fontWeight: "bold", fontSize: 18, color: "#333" }}>
-            Fabrica de Pastas 2025
-          </span>
+      <Sider
+        theme="light"
+        collapsible
+        collapsed={collapsed}
+        onCollapse={(value) => setCollapsed(value)}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            height: 64,
+            padding: "0 8px",
+            borderBottom: "1px solid #eee",
+            marginBottom: 8,
+            overflow: "hidden",
+          }}
+        >
+          <img src="/logo.jpg" alt="Logo" style={{ height: 40, marginRight: collapsed ? 0 : 8 }} />
+          {!collapsed && (
+            <span style={{ fontWeight: "bold", fontSize: 18, color: "#333" }}>
+              Fabrica de Pastas 2025
+            </span>
+          )}
         </div>
+
         <Menu
           mode="inline"
           defaultSelectedKeys={["dashboard"]}
+          selectedKeys={[currentPage]}
           items={menuItems}
+          onClick={handleMenuClick}
         />
       </Sider>
       <Layout>
         <Content style={{ margin: "24px 16px 0", background: "#fff", padding: 24 }}>
-          {children}
+          {renderContent()}
         </Content>
       </Layout>
     </Layout>
