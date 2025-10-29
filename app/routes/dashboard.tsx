@@ -5,16 +5,7 @@ import ClientesPage from "./clientes";
 import ComprobantesVentaPage from "./comprovantesventa";
 import MaquinasPage from "./maquinas";
 import ProveedoresPage from "./proveedores";
-
-// Local stub for OrdenesPage because './ordenes' module is missing
-const OrdenesPage: React.FC = () => {
-    return (
-        <div>
-            <h2>Administrar Órdenes</h2>
-            <p>Página de órdenes (stub)</p>
-        </div>
-    );
-};
+import OrdenesPage from "./ordenes"; // Importamos el componente real de órdenes
 
 export default function Dashboard() {
     const [mostrarListado, setMostrarListado] = useState(false);
@@ -69,8 +60,8 @@ export default function Dashboard() {
                         <Button type="primary" onClick={() => setMostrarListado(true)}>Administración de Clientes</Button>
                         <Button type="primary" onClick={() => setMostrarComprobantes(true)}>Comprobantes de Venta</Button>
                         <Button type="primary" onClick={() => setMostrarMaquinas(true)}>Administración de Máquinas</Button>
-                        <Button type="primary" onClick={() => setMostrarOrdenes(true)}>Administrar Órdenes</Button>
                         <Button type="primary" onClick={() => setMostrarProveedores(true)}>Administración de Proveedores</Button>
+                        <Button type="primary" onClick={() => setMostrarOrdenes(true)}>Administrar Órdenes</Button>
                     </div>
                 </>
             )}
