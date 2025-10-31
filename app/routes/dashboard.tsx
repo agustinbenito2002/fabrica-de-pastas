@@ -6,6 +6,8 @@ import ComprobantesVentaPage from "./comprovantesventa";
 import MaquinasPage from "./maquinas";
 import ProveedoresPage from "./proveedores";
 import OrdenesPage from "./ordenes";
+import compraspage from "./compras";
+import ComprasPage from "./compras";
 
 export default function Dashboard() {
     const [mostrarListado, setMostrarListado] = useState(false);
@@ -13,6 +15,7 @@ export default function Dashboard() {
     const [mostrarMaquinas, setMostrarMaquinas] = useState(false);
     const [mostrarProveedores, setMostrarProveedores] = useState(false);
     const [mostrarOrdenes, setMostrarOrdenes] = useState(false);
+    const [mostrarCompras, setMostrarCompras] = useState(false);
 
     return (
         <SidebarLayout>
@@ -51,6 +54,13 @@ export default function Dashboard() {
                     </Button>
                     <OrdenesPage />
                 </div>
+            ) : mostrarCompras ? (
+                <div>
+                    <Button style={{ marginBottom: 16 }} onClick={() => setMostrarCompras(false)}>
+                        Volver al Dashboard
+                    </Button>
+                    <ComprasPage />
+                </div>
             ) : (
                 <>
                     <h1 style={{ fontSize: 32, fontWeight: "bold" }}>Dashboard</h1>
@@ -61,7 +71,8 @@ export default function Dashboard() {
                         <Button type="primary" onClick={() => setMostrarComprobantes(true)}>Comprobantes de Venta</Button>
                         <Button type="primary" onClick={() => setMostrarMaquinas(true)}>Administración de Máquinas</Button>
                         <Button type="primary" onClick={() => setMostrarProveedores(true)}>Administración de Proveedores</Button>
-                        <Button type="primary" onClick={() => setMostrarOrdenes(true)}>Administrar Órdenes</Button>
+                        <Button type="primary" onClick={() => setMostrarOrdenes(true)}>Administrar Órdenes de ventas</Button>
+                        <Button type="primary" onClick={() => setMostrarCompras(true)}>Administrar órdenes de Compras</Button>
                     </div>
                 </>
             )}
