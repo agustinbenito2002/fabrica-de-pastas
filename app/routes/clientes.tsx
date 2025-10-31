@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { Table, Button, Modal, Form, Input, Switch, message } from "antd";
+import type { ColumnsType } from 'antd/es/table';
 
 const LOCAL_STORAGE_KEY = "clientes-listado";
 
@@ -24,374 +26,246 @@ type Cliente = {
 };
 
 const ClientesPage: React.FC = () => {
-	const [busqueda, setBusqueda] = useState("");
-	const [clientes, setClientes] = useState<Cliente[]>(getInitialClientes);
-	const [showForm, setShowForm] = useState(false);
-	const [editMode, setEditMode] = useState(false);
-	const [clienteEditando, setClienteEditando] = useState<Cliente | null>(null);
-	const [nuevoCliente, setNuevoCliente] = useState<Partial<Cliente>>({
-		nombre: "",
-		email: "",
-		telefono: "",
-		direccion: "",
-		estadoDeuda: false,
-		deuda: 0,
-		dni: "",
-	});
-	const [showEditDeuda, setShowEditDeuda] = useState(false);
-	const [clienteSeleccionado, setClienteSeleccionado] = useState<Cliente | null>(null);
-	const [nuevoMonto, setNuevoMonto] = useState("");
+    const [clientes, setClientes] = useState<Cliente[]>(getInitialClientes());
+    const [modalVisible, setModalVisible] = useState(false);
+    const [form] = Form.useForm();
+    const [editingId, setEditingId] = useState<number | null>(null);
 
-	useEffect(() => {
-		localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(clientes));
-	}, [clientes]);
+    const handleSubmit = (values: any) => {
+        if (editingId) {
+            // Editing existing client
+            const updatedClientes = clientes.map(cliente => 
+                cliente.id === editingId ? { ...values, id: editingId } : cliente
+            );
+            setClientes(updatedClientes);
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedClientes));
+            message.success('Cliente actualizado exitosamente');
+        } else {
+            // Creating new client
+            const newCliente = {
+                ...values,
+                id: clientes.length + 1,
+                estadoDeuda: values.estadoDeuda || false,
+                deuda: values.deuda || 0
+            };
+            const newClientes = [...clientes, newCliente];
+            setClientes(newClientes);
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newClientes));
+            message.success('Cliente creado exitosamente');
+        }
+        setModalVisible(false);
+        form.resetFields();
+        setEditingId(null);
+    };
 
-	const clientesFiltrados = clientes.filter((c) =>
-		c.nombre.toLowerCase().includes(busqueda.toLowerCase())
-	);
+    const columns: ColumnsType<Cliente> = [
+        {
+            title: 'ID',
+            dataIndex: 'id',
+            key: 'id',
+        },
+        {
+            title: 'DNI',
+            dataIndex: 'dni',
+            key: 'dni',
+        },
+        {
+            title: 'Nombre',
+            dataIndex: 'nombre',
+            key: 'nombre',
+        },
+        {
+            title: 'Email',
+            dataIndex: 'email',
+            key: 'email',
+        },
+        {
+            title: 'Teléfono',
+            dataIndex: 'telefono',
+            key: 'telefono',
+        },
+        {
+            title: 'Dirección',
+            dataIndex: 'direccion',
+            key: 'direccion',
+        },
+        {
+            title: 'Estado Deuda',
+            dataIndex: 'estadoDeuda',
+            key: 'estadoDeuda',
+            render: (text, record) => (
+                <span>
+                    {record.estadoDeuda ? (
+                        <span style={{ color: "red", fontWeight: "bold" }}>Con deuda</span>
+                    ) : (
+                        <span style={{ color: "green" }}>Sin deuda</span>
+                    )}
+                </span>
+            ),
+        },
+        {
+            title: 'Monto',
+            dataIndex: 'deuda',
+            key: 'deuda',
+            render: (text, record) => (
+                <span>
+                    {record.estadoDeuda ? (
+                        <>${record.deuda.toFixed(2)}{" "}
+                            <Button
+                                onClick={() => {
+                                    // Handle agregar monto
+                                }}
+                                style={{
+                                    marginLeft: 8,
+                                    background: "#faad14",
+                                    color: "#fff",
+                                    border: "none",
+                                    padding: "4px 8px",
+                                    borderRadius: 4,
+                                    cursor: "pointer",
+                                }}
+                            >
+                                Agregar
+                            </Button>
+                        </>
+                    ) : (
+                        "$0.00"
+                    )}
+                </span>
+            ),
+        },
+        {
+            title: 'Acciones',
+            key: 'acciones',
+            render: (_, record) => (
+                <span>
+                    <Button 
+                        type="link" 
+                        onClick={() => {
+                            setEditingId(record.id);
+                            form.setFieldsValue(record);
+                            setModalVisible(true);
+                        }}
+                    >
+                        Editar
+                    </Button>
+                    <Button 
+                        type="link" 
+                        danger 
+                        onClick={() => {
+                            // Handle eliminar cliente
+                        }}
+                    >
+                        Eliminar
+                    </Button>
+                </span>
+            ),
+        }
+    ];
 
-	function validarCliente(cliente: Partial<Cliente>) {
-		const errores: { nombre?: string; email?: string; dni?: string } = {};
-		if (!cliente.nombre?.trim()) errores.nombre = "El nombre es obligatorio.";
-		if (!cliente.email?.trim()) errores.email = "El email es obligatorio.";
-		else if (!/^\S+@\S+\.\S+$/.test(cliente.email)) errores.email = "El email no es válido.";
-		if (!cliente.dni?.trim()) errores.dni = "El DNI es obligatorio.";
-		else if (!/^\d{8}$/.test(cliente.dni)) errores.dni = "El DNI debe tener 8 dígitos.";
-		return errores;
-	}
+    return (
+        <div style={{ maxWidth: 1000, margin: "0 auto", padding: 24 }}>
+            <h1>Listado de Clientes</h1>
 
-	function handleAddOrEditCliente(e: React.FormEvent) {
-		e.preventDefault();
-		const validacion = validarCliente(nuevoCliente);
-		if (validacion.nombre || validacion.email) {
-			alert("Por favor complete los campos correctamente");
-			return;
-		}
+            {/* Botón Agregar */}
+            <Button
+                type="primary"
+                onClick={() => {
+                    setEditingId(null);
+                    form.resetFields();
+                    setModalVisible(true);
+                }}
+                style={{ marginBottom: 16 }}
+            >
+                Nuevo Cliente
+            </Button>
 
-		if (editMode && clienteEditando) {
-			// Editar cliente existente
-			setClientes((prev) =>
-				prev.map((c) =>
-					c.id === clienteEditando.id ? { ...c, ...nuevoCliente } : c
-				)
-			);
-		} else {
-			// Agregar nuevo cliente
-			const nuevo = {
-				id: Date.now(),
-				nombre: nuevoCliente.nombre || "",
-				email: nuevoCliente.email || "",
-				telefono: nuevoCliente.telefono || "",
-				direccion: nuevoCliente.direccion || "",
-				estadoDeuda: nuevoCliente.estadoDeuda || false,
-				deuda: nuevoCliente.deuda || 0,
-				dni: nuevoCliente.dni || "",
-			};
-			setClientes([...clientes, nuevo]);
-		}
+            <Table columns={columns} dataSource={clientes} rowKey="id" />
 
-		setNuevoCliente({ nombre: "", email: "", telefono: "", direccion: "", estadoDeuda: false, deuda: 0 });
-		setShowForm(false);
-		setEditMode(false);
-		setClienteEditando(null);
-	}
+            <Modal
+                title={editingId ? "Editar Cliente" : "Nuevo Cliente"}
+                open={modalVisible}
+                onCancel={() => {
+                    setModalVisible(false);
+                    form.resetFields();
+                    setEditingId(null);
+                }}
+                footer={null}
+                width={800}
+            >
+                <Form
+                    form={form}
+                    onFinish={handleSubmit}
+                    layout="vertical"
+                >
+                    <Form.Item
+                        name="dni"
+                        label="DNI"
+                        rules={[
+                            { required: true, message: 'El DNI es obligatorio' },
+                            { pattern: /^\d{8}$/, message: 'El DNI debe tener 8 dígitos' }
+                        ]}
+                    >
+                        <Input />
+                    </Form.Item>
 
-	return (
-		<div style={{ maxWidth: 1000, margin: "0 auto", padding: 24 }}>
-			<h1>Listado de Clientes</h1>
+                    <Form.Item
+                        name="nombre"
+                        label="Nombre"
+                        rules={[{ required: true, message: 'El nombre es obligatorio' }]}
+                    >
+                        <Input />
+                    </Form.Item>
 
-			{/* Botón Agregar */}
-			<button
-				onClick={() => {
-					setShowForm(true);
-					setEditMode(false);
-					setNuevoCliente({ nombre: "", email: "", telefono: "", direccion: "", estadoDeuda: false, deuda: 0 });
-				}}
-				style={{
-					marginBottom: 16,
-					padding: "8px 16px",
-					fontSize: 16,
-					color: "#fff",
-					background: "#1890ff",
-					border: "none",
-					borderRadius: 4,
-					cursor: "pointer",
-				}}
-			>
-				Agregar Cliente
-			</button>
+                    <Form.Item
+                        name="email"
+                        label="Email"
+                        rules={[
+                            { required: true, message: 'El email es obligatorio' },
+                            { type: 'email', message: 'Ingrese un email válido' }
+                        ]}
+                    >
+                        <Input />
+                    </Form.Item>
 
-			{/* Buscar */}
-			<input
-				type="text"
-				placeholder="Buscar por nombre..."
-				value={busqueda}
-				onChange={(e) => setBusqueda(e.target.value)}
-				style={{
-					width: "100%",
-					padding: 8,
-					marginBottom: 16,
-					fontSize: 16,
-					borderRadius: 4,
-					border: "1px solid #ccc",
-				}}
-			/>
+                    <Form.Item
+                        name="telefono"
+                        label="Teléfono"
+                    >
+                        <Input />
+                    </Form.Item>
 
-			{/* Tabla */}
-			<table style={{ width: "100%", borderCollapse: "collapse" }}>
-				<thead>
-					<tr style={{ backgroundColor: "#f5f5f5" }}>
-						<th style={{ border: "1px solid #ddd", padding: 10 }}>ID</th>
-						<th style={{ border: "1px solid #ddd", padding: 10 }}>DNI</th>
-						<th style={{ border: "1px solid #ddd", padding: 10 }}>Nombre</th>
-						<th style={{ border: "1px solid #ddd", padding: 10 }}>Email</th>
-						<th style={{ border: "1px solid #ddd", padding: 10 }}>Teléfono</th>
-						<th style={{ border: "1px solid #ddd", padding: 10 }}>Dirección</th>
-						<th style={{ border: "1px solid #ddd", padding: 10 }}>Estado Deuda</th>
-						<th style={{ border: "1px solid #ddd", padding: 10 }}>Monto</th>
-						<th style={{ border: "1px solid #ddd", padding: 10 }}>Acciones</th>
-					</tr>
-				</thead>
-				<tbody>
-					{clientesFiltrados.length === 0 ? (
-						<tr>
-							<td colSpan={8} style={{ textAlign: "center", padding: 20 }}>
-								No se encontraron clientes.
-							</td>
-						</tr>
-					) : (
-						clientesFiltrados.map((cliente) => (
-							<tr key={cliente.id} style={{ borderBottom: "1px solid #eee" }}>
-								<td style={{ padding: 10 }}>{cliente.id}</td>
-								<td style={{ padding: 10 }}>{cliente.dni}</td>
-								<td style={{ padding: 10 }}>{cliente.nombre}</td>
-								<td style={{ padding: 10 }}>{cliente.email}</td>
-								<td style={{ padding: 10 }}>{cliente.telefono}</td>
-								<td style={{ padding: 10 }}>{cliente.direccion}</td>
-								<td style={{ padding: 10 }}>
-									{cliente.estadoDeuda ? (
-										<span style={{ color: "red", fontWeight: "bold" }}>Con deuda</span>
-									) : (
-										<span style={{ color: "green" }}>Sin deuda</span>
-									)}
-								</td>
-								<td style={{ padding: 10 }}>
-									{cliente.estadoDeuda ? (
-										<>
-											${cliente.deuda.toFixed(2)}{" "}
-											<button
-												onClick={() => {
-													setClienteSeleccionado(cliente);
-													setShowEditDeuda(true);
-												}}
-												style={{
-													marginLeft: 8,
-													background: "#faad14",
-													color: "#fff",
-													border: "none",
-													padding: "4px 8px",
-													borderRadius: 4,
-													cursor: "pointer",
-												}}
-											>
-												Agregar
-											</button>
-										</>
-									) : (
-										"$0.00"
-									)}
-								</td>
-								<td style={{ padding: 10 }}>
-									<button
-										onClick={() => {
-											setShowForm(true);
-											setEditMode(true);
-											setClienteEditando(cliente);
-											setNuevoCliente(cliente);
-										}}
-										style={{
-											padding: "6px 12px",
-											background: "#1677ff",
-											color: "#fff",
-											border: "none",
-											borderRadius: 4,
-											cursor: "pointer",
-										}}
-									>
-										Editar
-									</button>
-								</td>
-							</tr>
-						))
-					)}
-				</tbody>
-			</table>
+                    <Form.Item
+                        name="direccion"
+                        label="Dirección"
+                    >
+                        <Input />
+                    </Form.Item>
 
-			{/* MODAL agregar o editar cliente */}
-			{showForm && (
-				<div
-					style={{
-						position: "fixed",
-						top: 0,
-						left: 0,
-						width: "100vw",
-						height: "100vh",
-						background: "rgba(0, 0, 0, 0.3)",
-						display: "flex",
-						alignItems: "center",
-						justifyContent: "center",
-						zIndex: 1000,
-					}}
-				>
-					<form
-						onSubmit={handleAddOrEditCliente}
-						style={{
-							minWidth: 400,
-							background: "#ffffffff",
-							borderRadius: 12,
-							boxShadow: "0 4px 24px rgba(0,0,0,0.15)",
-							padding: 32,
-							display: "flex",
-							flexDirection: "column",
-							gap: 12,
-						}}
-					>
-						<h2>{editMode ? "Editar cliente" : "Agregar nuevo cliente"}</h2>
-						<label>DNI</label>
-						<input
-							type="text"
-							value={nuevoCliente.dni}
-							onChange={(e) => setNuevoCliente({ ...nuevoCliente, dni: e.target.value })}
-						/>
-						<label>Nombre</label>
-						<input
-							type="text"
-							value={nuevoCliente.nombre}
-							onChange={(e) => setNuevoCliente({ ...nuevoCliente, nombre: e.target.value })}
-						/>
-						<label>Email</label>
-						<input
-							type="email"
-							value={nuevoCliente.email}
-							onChange={(e) => setNuevoCliente({ ...nuevoCliente, email: e.target.value })}
-						/>
-						<label>Teléfono</label>
-						<input
-							type="text"
-							value={nuevoCliente.telefono}
-							onChange={(e) => setNuevoCliente({ ...nuevoCliente, telefono: e.target.value })}
-						/>
-						<label>Dirección</label>
-						<input
-							type="text"
-							value={nuevoCliente.direccion}
-							onChange={(e) => setNuevoCliente({ ...nuevoCliente, direccion: e.target.value })}
-						/>
-						<label>
-							<input
-								type="checkbox"
-								checked={nuevoCliente.estadoDeuda}
-								onChange={(e) =>
-									setNuevoCliente({ ...nuevoCliente, estadoDeuda: e.target.checked })
-								}
-							/>
-							Tiene deuda
-						</label>
-						{nuevoCliente.estadoDeuda && (
-							<>
-								<label>Monto de deuda</label>
-								<input
-									type="number"
-									value={nuevoCliente.deuda}
-									onChange={(e) =>
-										setNuevoCliente({
-											...nuevoCliente,
-											deuda: parseFloat(e.target.value) || 0,
-										})
-									}
-								/>
-							</>
-						)}
-						<div style={{ display: "flex", justifyContent: "space-between" }}>
-							<button type="submit" style={{ background: "#1677ff", color: "#fff", padding: 8 }}>
-								{editMode ? "Guardar cambios" : "Guardar"}
-							</button>
-							<button onClick={() => setShowForm(false)} type="button" style={{ padding: 8 }}>
-								Cancelar
-							</button>
-						</div>
-					</form>
-				</div>
-			)}
+                    <Form.Item
+                        name="estadoDeuda"
+                        label="Estado de Deuda"
+                        valuePropName="checked"
+                    >
+                        <Switch />
+                    </Form.Item>
 
-			{/* MODAL agregar monto de deuda */}
-			{showEditDeuda && clienteSeleccionado && (
-				<div
-					style={{
-						position: "fixed",
-						top: 0,
-						left: 0,
-						width: "100vw",
-						height: "100vh",
-						background: "rgba(0,0,0,0.3)",
-						display: "flex",
-						alignItems: "center",
-						justifyContent: "center",
-						zIndex: 1000,
-					}}
-				>
-					<div
-						style={{
-							minWidth: 320,
-							background: "#fff",
-							borderRadius: 12,
-							padding: 24,
-							boxShadow: "0 4px 20px rgba(0,0,0,0.2)",
-						}}
-					>
-						<h3>Agregar monto a la deuda</h3>
-						<p>
-							Cliente: <b>{clienteSeleccionado.nombre}</b>
-						</p>
-						<input
-							type="number"
-							placeholder="Ingrese monto"
-							value={nuevoMonto}
-							onChange={(e) => setNuevoMonto(e.target.value)}
-							style={{ width: "100%", padding: 8, marginBottom: 12 }}
-						/>
-						<div style={{ display: "flex", justifyContent: "space-between" }}>
-							<button
-								onClick={() => setShowEditDeuda(false)}
-								style={{ padding: 8, background: "#eee" }}
-							>
-								Cancelar
-							</button>
-							<button
-								onClick={() => {
-									const monto = parseFloat(nuevoMonto);
-									if (!isNaN(monto) && monto > 0) {
-										setClientes((prev) =>
-											prev.map((c) =>
-												c.id === clienteSeleccionado.id
-													? { ...c, deuda: c.deuda + monto }
-													: c
-											)
-										);
-										setShowEditDeuda(false);
-										setNuevoMonto("");
-									}
-								}}
-								style={{ padding: 8, background: "#faad14", color: "#fff", border: "none" }}
-							>
-								Agregar
-							</button>
-						</div>
-					</div>
-				</div>
-			)}
-		</div>
-	);
+                    <Form.Item
+                        name="deuda"
+                        label="Deuda"
+                    >
+                        <Input type="number" prefix="$" min={0} />
+                    </Form.Item>
+
+                    <Form.Item>
+                        <Button type="primary" htmlType="submit">
+                            {editingId ? 'Actualizar' : 'Crear'}
+                        </Button>
+                    </Form.Item>
+                </Form>
+            </Modal>
+        </div>
+    );
 };
 
 export default ClientesPage;
