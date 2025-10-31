@@ -5,7 +5,7 @@ import ClientesPage from "./clientes";
 import ComprobantesVentaPage from "./comprovantesventa";
 import MaquinasPage from "./maquinas";
 import ProveedoresPage from "./proveedores";
-import OrdenesPage from "./ordenes"; // Importamos el componente real de órdenes
+import OrdenesPage from "./ordenes";
 
 export default function Dashboard() {
     const [mostrarListado, setMostrarListado] = useState(false);

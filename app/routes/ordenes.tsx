@@ -6,6 +6,7 @@ interface Orden {
     id: number;
     cliente: string;
     fecha: string;
+    tipo: 'evento'  | 'regular'| 'donacion';
     estado: 'Pendiente' | 'En Proceso' | 'Completada' | 'Cancelada';
     productos: string;
     total: number;
@@ -103,6 +104,10 @@ const OrdenesPage: React.FC = () => {
             dataIndex: 'fecha',
             key: 'fecha',
         },
+        {            title: 'Tipo',
+            dataIndex: 'tipo',
+            key: 'tipo',
+        },
         {
             title: 'Estado',
             dataIndex: 'estado',
@@ -181,6 +186,18 @@ const OrdenesPage: React.FC = () => {
                         rules={[{ required: true, message: 'Por favor ingrese la fecha' }]}
                     >
                         <Input type="date" />
+                    </Form.Item>
+
+                    <Form.Item
+                        name="tipo"
+                        label="Tipo"
+                        rules={[{ required: true, message: 'Por favor seleccione el tipo' }]}
+                    >
+                        <Select>
+                            <Select.Option value="evento">Evento</Select.Option>
+                            <Select.Option value="regular">Regular</Select.Option>
+                            <Select.Option value="donacion">Donación</Select.Option>
+                        </Select>
                     </Form.Item>
 
                     <Form.Item

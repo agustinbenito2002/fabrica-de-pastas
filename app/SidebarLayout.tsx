@@ -5,9 +5,11 @@ import {
   ShoppingOutlined,
   UserOutlined,
   SettingOutlined,
+  BookOutlined,
 } from "@ant-design/icons";
 import MateriasPage from "./routes/materias";
 import ProductosPage from "./routes/productos";
+import RecetasPage from "./routes/recetas";  // Add this import
 
 const { Sider, Content } = Layout;
 
@@ -24,6 +26,7 @@ const menuItems = [
     children: [
       { key: "materia-prima", label: "Materia Prima" },
       { key: "productos", label: "Productos" },
+      { key: "recetas", label: "Recetas" },
     ],
   },
   {
@@ -52,6 +55,8 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
         return <MateriasPage />;
       case "productos":
         return <ProductosPage />;
+      case "recetas":     // Add this case
+        return <RecetasPage />;
       default:
         return children;
     }

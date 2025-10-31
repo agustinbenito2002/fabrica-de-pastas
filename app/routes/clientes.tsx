@@ -6,9 +6,9 @@ function getInitialClientes() {
 	const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
 	if (stored) return JSON.parse(stored);
 	return [
-		{ id: 1, nombre: "Juan Pérez", email: "juan@example.com", telefono: "1122334455", direccion: "Calle 1", estadoDeuda: false, deuda: 0 },
-		{ id: 2, nombre: "María Gómez", email: "maria@example.com", telefono: "1199887766", direccion: "Calle 2", estadoDeuda: true, deuda: 5000 },
-		{ id: 3, nombre: "Carlos López", email: "carlos@example.com", telefono: "1144556677", direccion: "Calle 3", estadoDeuda: false, deuda: 0 },
+		{ id: 1, nombre: "Juan Pérez", email: "juan@example.com", telefono: "1122334455", direccion: "Calle 1", estadoDeuda: false, deuda: 0, dni: "12345678" },
+		{ id: 2, nombre: "María Gómez", email: "maria@example.com", telefono: "1199887766", direccion: "Calle 2", estadoDeuda: true, deuda: 5000, dni: "23456789" },
+		{ id: 3, nombre: "Carlos López", email: "carlos@example.com", telefono: "1144556677", direccion: "Calle 3", estadoDeuda: false, deuda: 0, dni: "34567890" },
 	];
 }
 
@@ -20,6 +20,7 @@ type Cliente = {
 	direccion: string;
 	estadoDeuda: boolean;
 	deuda: number;
+	dni: string;
 };
 
 const ClientesPage: React.FC = () => {
@@ -35,6 +36,7 @@ const ClientesPage: React.FC = () => {
 		direccion: "",
 		estadoDeuda: false,
 		deuda: 0,
+		dni: "",
 	});
 	const [showEditDeuda, setShowEditDeuda] = useState(false);
 	const [clienteSeleccionado, setClienteSeleccionado] = useState<Cliente | null>(null);
@@ -49,10 +51,12 @@ const ClientesPage: React.FC = () => {
 	);
 
 	function validarCliente(cliente: Partial<Cliente>) {
-		const errores: { nombre?: string; email?: string } = {};
+		const errores: { nombre?: string; email?: string; dni?: string } = {};
 		if (!cliente.nombre?.trim()) errores.nombre = "El nombre es obligatorio.";
 		if (!cliente.email?.trim()) errores.email = "El email es obligatorio.";
 		else if (!/^\S+@\S+\.\S+$/.test(cliente.email)) errores.email = "El email no es válido.";
+		if (!cliente.dni?.trim()) errores.dni = "El DNI es obligatorio.";
+		else if (!/^\d{8}$/.test(cliente.dni)) errores.dni = "El DNI debe tener 8 dígitos.";
 		return errores;
 	}
 
@@ -81,6 +85,7 @@ const ClientesPage: React.FC = () => {
 				direccion: nuevoCliente.direccion || "",
 				estadoDeuda: nuevoCliente.estadoDeuda || false,
 				deuda: nuevoCliente.deuda || 0,
+				dni: nuevoCliente.dni || "",
 			};
 			setClientes([...clientes, nuevo]);
 		}
@@ -137,6 +142,7 @@ const ClientesPage: React.FC = () => {
 				<thead>
 					<tr style={{ backgroundColor: "#f5f5f5" }}>
 						<th style={{ border: "1px solid #ddd", padding: 10 }}>ID</th>
+						<th style={{ border: "1px solid #ddd", padding: 10 }}>DNI</th>
 						<th style={{ border: "1px solid #ddd", padding: 10 }}>Nombre</th>
 						<th style={{ border: "1px solid #ddd", padding: 10 }}>Email</th>
 						<th style={{ border: "1px solid #ddd", padding: 10 }}>Teléfono</th>
@@ -157,6 +163,7 @@ const ClientesPage: React.FC = () => {
 						clientesFiltrados.map((cliente) => (
 							<tr key={cliente.id} style={{ borderBottom: "1px solid #eee" }}>
 								<td style={{ padding: 10 }}>{cliente.id}</td>
+								<td style={{ padding: 10 }}>{cliente.dni}</td>
 								<td style={{ padding: 10 }}>{cliente.nombre}</td>
 								<td style={{ padding: 10 }}>{cliente.email}</td>
 								<td style={{ padding: 10 }}>{cliente.telefono}</td>
@@ -229,7 +236,7 @@ const ClientesPage: React.FC = () => {
 						left: 0,
 						width: "100vw",
 						height: "100vh",
-						background: "rgba(0,0,0,0.3)",
+						background: "rgba(0, 0, 0, 0.3)",
 						display: "flex",
 						alignItems: "center",
 						justifyContent: "center",
@@ -240,7 +247,7 @@ const ClientesPage: React.FC = () => {
 						onSubmit={handleAddOrEditCliente}
 						style={{
 							minWidth: 400,
-							background: "#fff",
+							background: "#ffffffff",
 							borderRadius: 12,
 							boxShadow: "0 4px 24px rgba(0,0,0,0.15)",
 							padding: 32,
@@ -250,6 +257,12 @@ const ClientesPage: React.FC = () => {
 						}}
 					>
 						<h2>{editMode ? "Editar cliente" : "Agregar nuevo cliente"}</h2>
+						<label>DNI</label>
+						<input
+							type="text"
+							value={nuevoCliente.dni}
+							onChange={(e) => setNuevoCliente({ ...nuevoCliente, dni: e.target.value })}
+						/>
 						<label>Nombre</label>
 						<input
 							type="text"
