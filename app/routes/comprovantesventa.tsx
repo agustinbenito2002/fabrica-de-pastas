@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Modal, Form, Input, Button } from "antd";
+import { Modal, Form, Input, Button, InputNumber, Space, message } from "antd";
 
 const LOCAL_STORAGE_KEY = "comprobantes-listado";
 
@@ -19,9 +19,7 @@ const comprobantesEjemplo = [
     fecha: "2025-09-29",
     cliente: "María Gómez",
     nroPedido: "A002",
-    productos: [
-      { nombre: "Tallarines", cantidad: 3, precio: 90 },
-    ],
+    productos: [{ nombre: "Tallarines", cantidad: 3, precio: 90 }],
   },
 ];
 
@@ -43,167 +41,76 @@ const ComprobantesVentaPage: React.FC = () => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
     return stored ? JSON.parse(stored) : comprobantesEjemplo;
   });
-  const [comprobanteSeleccionado, setComprobanteSeleccionado] = useState<number | null>(null);
-  const [showPopup, setShowPopup] = useState(false);
-  const [showAddPopup, setShowAddPopup] = useState(false);
-  const [showEditPopup, setShowEditPopup] = useState(false);
-  const [nuevoComprobante, setNuevoComprobante] = useState<{
-    fecha: string;
-    cliente: string;
-    nroPedido: string;
-    productos: Producto[];
-  }>({
-    fecha: "",
-    cliente: "",
-    nroPedido: "",
-    productos: [{ nombre: "", cantidad: 1, precio: 0 }],
-  });
-  const [editComprobante, setEditComprobante] = useState<Comprobante | null>(null);
-  const [errorAdd, setErrorAdd] = useState("");
+
+  const [showFormModal, setShowFormModal] = useState(false);
+  const [editingComprobante, setEditingComprobante] = useState<Comprobante | null>(null);
   const [busqueda, setBusqueda] = useState("");
-  const [modalVisible, setModalVisible] = useState(false);
-  const [editingId, setEditingId] = useState<number | null>(null);
   const [form] = Form.useForm();
 
+  // Guardar cambios automáticamente
   useEffect(() => {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(comprobantes));
   }, [comprobantes]);
 
-  const comprobantesFiltrados = comprobantes.filter(c =>
-    c.cliente.toLowerCase().includes(busqueda.toLowerCase()) ||
-    c.nroPedido.toLowerCase().includes(busqueda.toLowerCase()) ||
-    c.fecha.includes(busqueda)
+  const comprobantesFiltrados = comprobantes.filter(
+    (c) =>
+      c.cliente.toLowerCase().includes(busqueda.toLowerCase()) ||
+      c.nroPedido.toLowerCase().includes(busqueda.toLowerCase()) ||
+      c.fecha.includes(busqueda)
   );
 
-  const handleComprobanteClick = (id: number) => {
-    setComprobanteSeleccionado(id);
-    setShowPopup(true);
-  };
-
-  const handleAddComprobante = () => {
-    const prod = nuevoComprobante.productos[0];
-    if (
-      !nuevoComprobante.fecha.trim() ||
-      !nuevoComprobante.cliente.trim() ||
-      !nuevoComprobante.nroPedido.trim() ||
-      !prod.nombre.trim() ||
-      prod.cantidad <= 0 ||
-      prod.precio <= 0
-    ) {
-      setErrorAdd("Completa todos los campos correctamente.");
-      return;
+  // ✅ Eliminación completamente funcional
+  const handleEliminar = (id: number) => {
+    if (window.confirm("¿Desea eliminar este comprobante?")) {
+      const nuevos = comprobantes.filter((c) => c.id !== id);
+      setComprobantes(nuevos);
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(nuevos));
+      message.success("Comprobante eliminado correctamente");
     }
-    setComprobantes([
-      ...comprobantes,
-      {
-        id: comprobantes.length ? comprobantes[comprobantes.length - 1].id + 1 : 1,
-        fecha: nuevoComprobante.fecha,
-        cliente: nuevoComprobante.cliente,
-        nroPedido: nuevoComprobante.nroPedido,
-        productos: [...nuevoComprobante.productos],
-      },
-    ]);
-    setShowAddPopup(false);
-    setNuevoComprobante({
-      fecha: "",
-      cliente: "",
-      nroPedido: "",
-      productos: [{ nombre: "", cantidad: 1, precio: 0 }],
-    });
-    setErrorAdd("");
   };
 
-  const handleModificar = () => {
-    const comprobante = comprobantes.find(c => c.id === comprobanteSeleccionado);
+  const handleNuevo = () => {
+    setEditingComprobante(null);
+    form.resetFields();
+    setShowFormModal(true);
+  };
+
+  const handleModificar = (id: number) => {
+    const comprobante = comprobantes.find((c) => c.id === id);
     if (comprobante) {
-      setEditComprobante({ ...comprobante });
-      setShowPopup(false);
-      setShowEditPopup(true);
-    }
-  };
-
-  const handleEditSave = () => {
-    if (!editComprobante) return;
-    const prod = editComprobante.productos[0];
-    if (
-      !editComprobante.fecha.trim() ||
-      !editComprobante.cliente.trim() ||
-      !editComprobante.nroPedido.trim() ||
-      !prod.nombre.trim() ||
-      prod.cantidad <= 0 ||
-      prod.precio <= 0
-    ) {
-      setErrorAdd("Completa todos los campos correctamente.");
-      return;
-    }
-    setComprobantes(comprobantes.map(c =>
-      c.id === editComprobante.id ? { ...editComprobante } : c
-    ));
-    setShowEditPopup(false);
-    setEditComprobante(null);
-    setErrorAdd("");
-  };
-
-  const handleEliminar = () => {
-    setComprobantes(comprobantes.filter(c => c.id !== comprobanteSeleccionado));
-    setShowPopup(false);
-    setComprobanteSeleccionado(null);
-  };
-
-  const handleProductoChange = (field: keyof Producto, value: any, edit = false) => {
-    if (edit && editComprobante) {
-      setEditComprobante({
-        ...editComprobante,
-        productos: [
-          {
-            ...editComprobante.productos[0],
-            [field]: field === "cantidad" || field === "precio" ? Number(value) : value,
-          },
-        ],
-      });
-    } else {
-      setNuevoComprobante({
-        ...nuevoComprobante,
-        productos: [
-          {
-            ...nuevoComprobante.productos[0],
-            [field]: field === "cantidad" || field === "precio" ? Number(value) : value,
-          },
-        ],
-      });
+      setEditingComprobante(comprobante);
+      form.setFieldsValue(comprobante);
+      setShowFormModal(true);
     }
   };
 
   const handleSubmit = (values: any) => {
-    console.log(values);
-    // Aquí puedes manejar el envío del formulario, ya sea para crear o editar un comprobante
-    // Si editingId tiene un valor, significa que estamos editando un comprobante existente
-    if (editingId) {
-      // Lógica para actualizar un comprobante existente
-      const updatedComprobantes = comprobantes.map(c =>
-        c.id === editingId ? { ...c, ...values } : c
+    if (editingComprobante) {
+      const updated = comprobantes.map((c) =>
+        c.id === editingComprobante.id ? { ...editingComprobante, ...values } : c
       );
-      setComprobantes(updatedComprobantes);
+      setComprobantes(updated);
+      message.success("Comprobante actualizado correctamente");
     } else {
-      // Lógica para crear un nuevo comprobante
-      const newComprobante = {
+      const newComprobante: Comprobante = {
         id: comprobantes.length ? comprobantes[comprobantes.length - 1].id + 1 : 1,
         ...values,
-        productos: [{ nombre: "", cantidad: 1, precio: 0 }], // Inicializar con un producto vacío
       };
       setComprobantes([...comprobantes, newComprobante]);
+      message.success("Comprobante agregado exitosamente");
     }
-    setModalVisible(false);
+
+    setShowFormModal(false);
     form.resetFields();
-    setEditingId(null);
+    setEditingComprobante(null);
   };
 
   return (
-    <div style={{ maxWidth: 900, margin: "0 auto", padding: 24 }}>
+    <div style={{ maxWidth: 950, margin: "0 auto", padding: 24 }}>
       <input
         type="text"
         value={busqueda}
-        onChange={e => setBusqueda(e.target.value)}
+        onChange={(e) => setBusqueda(e.target.value)}
         placeholder="Buscar por cliente, nro de pedido o fecha"
         style={{
           marginBottom: 16,
@@ -211,9 +118,10 @@ const ComprobantesVentaPage: React.FC = () => {
           padding: 8,
           fontSize: 16,
           borderRadius: 4,
-          border: "1px solid #ccc"
+          border: "1px solid #ccc",
         }}
       />
+
       <button
         style={{
           marginBottom: 24,
@@ -223,14 +131,15 @@ const ComprobantesVentaPage: React.FC = () => {
           color: "#fff",
           border: "none",
           borderRadius: 4,
-          cursor: "pointer"
+          cursor: "pointer",
         }}
-        onClick={() => setShowAddPopup(true)}
+        onClick={handleNuevo}
       >
         Registrar comprobante
       </button>
+
       <h2>Comprobantes de Venta</h2>
-      <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: 32 }}>
+      <table style={{ width: "100%", borderCollapse: "collapse" }}>
         <thead>
           <tr style={{ background: "#f5f5f5" }}>
             <th style={{ border: "1px solid #ddd", padding: 8 }}>Fecha</th>
@@ -238,18 +147,12 @@ const ComprobantesVentaPage: React.FC = () => {
             <th style={{ border: "1px solid #ddd", padding: 8 }}>Cliente</th>
             <th style={{ border: "1px solid #ddd", padding: 8 }}>Productos</th>
             <th style={{ border: "1px solid #ddd", padding: 8 }}>Precio Total</th>
+            <th style={{ border: "1px solid #ddd", padding: 8 }}>Acciones</th>
           </tr>
         </thead>
         <tbody>
           {comprobantesFiltrados.map((comprobante) => (
-            <tr
-              key={comprobante.id}
-              style={{
-                background: comprobanteSeleccionado === comprobante.id ? "#e6f7ff" : "#fff",
-                cursor: "pointer"
-              }}
-              onClick={() => handleComprobanteClick(comprobante.id)}
-            >
+            <tr key={comprobante.id}>
               <td style={{ border: "1px solid #ddd", padding: 8 }}>{comprobante.fecha}</td>
               <td style={{ border: "1px solid #ddd", padding: 8 }}>{comprobante.nroPedido}</td>
               <td style={{ border: "1px solid #ddd", padding: 8 }}>{comprobante.cliente}</td>
@@ -263,250 +166,108 @@ const ComprobantesVentaPage: React.FC = () => {
               <td style={{ border: "1px solid #ddd", padding: 8 }}>
                 ${calcularTotal(comprobante.productos)}
               </td>
+              <td style={{ border: "1px solid #ddd", padding: 8, textAlign: "center" }}>
+                <Button
+                  type="primary"
+                  style={{ marginRight: 8 }}
+                  onClick={() => handleModificar(comprobante.id)}
+                >
+                  Editar
+                </Button>
+                <Button danger onClick={() => handleEliminar(comprobante.id)}>
+                  Eliminar
+                </Button>
+              </td>
             </tr>
           ))}
         </tbody>
       </table>
-      {/* Pop-up de opciones comprobante */}
-      {showPopup && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0, left: 0, right: 0, bottom: 0,
-            background: "rgba(0,0,0,0.3)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 1000
-          }}
-        >
-          <div
-            style={{
-              background: "#fff",
-              padding: 32,
-              borderRadius: 8,
-              boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
-              minWidth: 300,
-              textAlign: "center"
-            }}
+
+      {/* Modal de agregar o editar comprobante */}
+      <Modal
+        title={editingComprobante ? "Editar Comprobante" : "Registrar Comprobante"}
+        open={showFormModal}
+        onCancel={() => {
+          setShowFormModal(false);
+          setEditingComprobante(null);
+          form.resetFields();
+        }}
+        footer={null}
+        width={800}
+      >
+        <Form form={form} layout="vertical" onFinish={handleSubmit}>
+          <Form.Item
+            name="fecha"
+            label="Fecha"
+            rules={[{ required: true, message: "Ingrese la fecha" }]}
           >
-            <h3>Opciones del comprobante</h3>
-            <button
-              style={{
-                margin: "8px 0",
-                padding: "8px 16px",
-                fontSize: 16,
-                background: "#52c41a",
-                color: "#fff",
-                border: "none",
-                borderRadius: 4,
-                cursor: "pointer"
-              }}
-              onClick={handleModificar}
-            >
-              Modificar
-            </button>
-            <br />
-            <button
-              style={{
-                margin: "8px 0",
-                padding: "8px 16px",
-                fontSize: 16,
-                background: "#ff4d4f",
-                color: "#fff",
-                border: "none",
-                borderRadius: 4,
-                cursor: "pointer"
-              }}
-              onClick={handleEliminar}
-            >
-              Eliminar
-            </button>
-            <br />
-            <button
-              style={{
-                margin: "8px 0",
-                padding: "8px 16px",
-                fontSize: 16,
-                background: "#eee",
-                color: "#333",
-                border: "none",
-                borderRadius: 4,
-                cursor: "pointer"
-              }}
-              onClick={() => setShowPopup(false)}
-            >
-              Cancelar
-            </button>
-          </div>
-        </div>
-      )}
-      {/* Pop-up para agregar comprobante */}
-      {showAddPopup && (
-        <Modal
-          title="Registrar comprobante"
-          open={showAddPopup}
-          onCancel={() => {
-            setShowAddPopup(false);
-            setErrorAdd("");
-          }}
-          footer={null}
-          width={800}
-        >
-          <Form
-            form={form}
-            onFinish={handleSubmit}
-            layout="vertical"
+            <Input type="date" />
+          </Form.Item>
+
+          <Form.Item
+            name="nroPedido"
+            label="Número de Pedido"
+            rules={[{ required: true, message: "Ingrese el número de pedido" }]}
           >
-            <Form.Item
-              name="numero"
-              label="Número de Comprobante"
-              rules={[{ required: true, message: 'Ingrese el número de comprobante' }]}
-            >
-              <Input />
-            </Form.Item>
+            <Input />
+          </Form.Item>
 
-            <Form.Item
-              name="fecha"
-              label="Fecha"
-              rules={[{ required: true, message: 'Ingrese la fecha' }]}
-            >
-              <Input type="date" />
-            </Form.Item>
-
-            <Form.Item
-              name="cliente"
-              label="Cliente"
-              rules={[{ required: true, message: 'Seleccione el cliente' }]}
-            >
-              <Input />
-            </Form.Item>
-
-            <Form.Item
-              name="total"
-              label="Total"
-              rules={[{ required: true, message: 'Ingrese el total' }]}
-            >
-              <Input type="number" prefix="$" />
-            </Form.Item>
-
-            <Form.Item>
-              <Button type="primary" htmlType="submit">
-                Crear
-              </Button>
-            </Form.Item>
-          </Form>
-        </Modal>
-      )}
-      {/* Pop-up para editar comprobante */}
-      {showEditPopup && editComprobante && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0, left: 0, right: 0, bottom: 0,
-            background: "rgba(0,0,0,0.3)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 1000
-          }}
-        >
-          <div
-            style={{
-              background: "#fff",
-              padding: 32,
-              borderRadius: 8,
-              boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
-              minWidth: 350,
-              textAlign: "center"
-            }}
+          <Form.Item
+            name="cliente"
+            label="Cliente"
+            rules={[{ required: true, message: "Ingrese el nombre del cliente" }]}
           >
-            <h3>Modificar comprobante</h3>
-            <input
-              type="date"
-              value={editComprobante.fecha}
-              onChange={e => setEditComprobante({ ...editComprobante, fecha: e.target.value })}
-              style={{ marginBottom: 8, width: "90%", padding: 8 }}
-              placeholder="Fecha"
-            /><br />
-            <input
-              type="text"
-              value={editComprobante.nroPedido}
-              onChange={e => setEditComprobante({ ...editComprobante, nroPedido: e.target.value })}
-              style={{ marginBottom: 8, width: "90%", padding: 8 }}
-              placeholder="Nro Pedido"
-            /><br />
-            <input
-              type="text"
-              value={editComprobante.cliente}
-              onChange={e => setEditComprobante({ ...editComprobante, cliente: e.target.value })}
-              style={{ marginBottom: 8, width: "90%", padding: 8 }}
-              placeholder="Cliente"
-            /><br />
-            <input
-              type="text"
-              value={editComprobante.productos[0].nombre}
-              onChange={e => handleProductoChange("nombre", e.target.value, true)}
-              style={{ marginBottom: 8, width: "90%", padding: 8 }}
-              placeholder="Producto"
-            /><br />
-            <input
-              type="number"
-              value={editComprobante.productos[0].cantidad}
-              min={1}
-              onChange={e => handleProductoChange("cantidad", e.target.value, true)}
-              style={{ marginBottom: 8, width: "90%", padding: 8 }}
-              placeholder="Cantidad"
-            /><br />
-            <input
-              type="number"
-              value={editComprobante.productos[0].precio}
-              min={1}
-              onChange={e => handleProductoChange("precio", e.target.value, true)}
-              style={{ marginBottom: 8, width: "90%", padding: 8 }}
-              placeholder="Precio unitario"
-            /><br />
-            {errorAdd && (
-              <div style={{ color: "red", marginBottom: 8 }}>{errorAdd}</div>
+            <Input />
+          </Form.Item>
+
+          <Form.List name="productos">
+            {(fields, { add, remove }) => (
+              <>
+                <label><strong>Productos</strong></label>
+                {fields.map(({ key, name, ...restField }) => (
+                  <Space key={key} style={{ display: "flex", marginBottom: 8 }} align="baseline">
+                    <Form.Item
+                      {...restField}
+                      name={[name, "nombre"]}
+                      rules={[{ required: true, message: "Ingrese nombre del producto" }]}
+                    >
+                      <Input placeholder="Producto" />
+                    </Form.Item>
+                    <Form.Item
+                      {...restField}
+                      name={[name, "cantidad"]}
+                      rules={[{ required: true, message: "Ingrese cantidad" }]}
+                    >
+                      <InputNumber placeholder="Cantidad" min={1} />
+                    </Form.Item>
+                    <Form.Item
+                      {...restField}
+                      name={[name, "precio"]}
+                      rules={[{ required: true, message: "Ingrese precio" }]}
+                    >
+                      <InputNumber placeholder="Precio" min={0} />
+                    </Form.Item>
+                    <Button type="link" danger onClick={() => remove(name)}>
+                      Eliminar
+                    </Button>
+                  </Space>
+                ))}
+                <Form.Item>
+                  <Button type="dashed" onClick={() => add()} block>
+                    Agregar Producto
+                  </Button>
+                </Form.Item>
+              </>
             )}
-            <button
-              style={{
-                margin: "8px 0",
-                padding: "8px 16px",
-                fontSize: 16,
-                background: "#52c41a",
-                color: "#fff",
-                border: "none",
-                borderRadius: 4,
-                cursor: "pointer"
-              }}
-              onClick={handleEditSave}
-            >
-              Guardar cambios
-            </button>
-            <br />
-            <button
-              style={{
-                margin: "8px 0",
-                padding: "8px 16px",
-                fontSize: 16,
-                background: "#eee",
-                color: "#333",
-                border: "none",
-                borderRadius: 4,
-                cursor: "pointer"
-              }}
-              onClick={() => {
-                setShowEditPopup(false);
-                setEditComprobante(null);
-                setErrorAdd("");
-              }}
-            >
-              Cancelar
-            </button>
-          </div>
-        </div>
-      )}
+          </Form.List>
+
+          <Form.Item>
+            <Button type="primary" htmlType="submit" block>
+              {editingComprobante ? "Guardar Cambios" : "Crear Comprobante"}
+            </Button>
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 };

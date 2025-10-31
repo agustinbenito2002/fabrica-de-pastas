@@ -10,6 +10,7 @@ type ProveedorRecord = {
   telefono: string;
   email: string;
   direccion: string;
+  cuit: string;
 };
 
 const initialData: ProveedorRecord[] = [
@@ -19,7 +20,8 @@ const initialData: ProveedorRecord[] = [
     nombre: "Harinas del Sur S.A.",
     telefono: "1122334455",
     email: "contacto@harinassur.com",
-    direccion: "Av. Rivadavia 4567, CABA"
+    direccion: "Av. Rivadavia 4567, CABA",
+    cuit: "30711222334"
   },
   {
     key: "2",
@@ -27,7 +29,8 @@ const initialData: ProveedorRecord[] = [
     nombre: "Pastas Industriales SRL",
     telefono: "1145678901",
     email: "ventas@pastasind.com",
-    direccion: "Calle 25 de Mayo 320, Rosario"
+    direccion: "Calle 25 de Mayo 320, Rosario",
+    cuit: "30555666777"
   }
 ];
 
@@ -114,6 +117,7 @@ export default function ProveedoresPage() {
   const columns = [
     { title: "ID", dataIndex: "id", key: "id" },
     { title: "Nombre", dataIndex: "nombre", key: "nombre" },
+    { title: "CUIT", dataIndex: "cuit", key: "cuit" },
     { title: "Teléfono", dataIndex: "telefono", key: "telefono" },
     { title: "Email", dataIndex: "email", key: "email" },
     { title: "Dirección", dataIndex: "direccion", key: "direccion" },
@@ -177,6 +181,17 @@ export default function ProveedoresPage() {
             rules={[{ required: true, message: "Ingrese el nombre" }]}
           >
             <Input />
+          </Form.Item>
+
+          <Form.Item
+            label="CUIT"
+            name="cuit"
+            rules={[
+              { required: true, message: "Ingrese el CUIT" },
+              { pattern: /^[0-9]{11}$/, message: "Debe tener 11 dígitos numéricos" }
+            ]}
+          >
+            <Input maxLength={11} />
           </Form.Item>
 
           <Form.Item

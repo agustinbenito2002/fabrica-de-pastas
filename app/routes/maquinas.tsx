@@ -20,6 +20,7 @@ type MaquinaRecord = {
   tipo: string;
   estado: string;
   fechaMantenimiento: string;
+  tipoMantenimiento: string; // 🆕 Nuevo campo
   responsable: string;
 };
 
@@ -30,6 +31,7 @@ const initialData: MaquinaRecord[] = [
     tipo: "Amasadora",
     estado: "Operativa",
     fechaMantenimiento: "2025-09-15",
+    tipoMantenimiento: "Preventivo",
     responsable: "Juan Pérez"
   },
   {
@@ -38,6 +40,7 @@ const initialData: MaquinaRecord[] = [
     tipo: "Cortadora",
     estado: "En reparación",
     fechaMantenimiento: "2025-08-30",
+    tipoMantenimiento: "Correctivo",
     responsable: "Ana Gómez"
   },
   {
@@ -46,6 +49,7 @@ const initialData: MaquinaRecord[] = [
     tipo: "Empaquetadora",
     estado: "Operativa",
     fechaMantenimiento: "2025-09-10",
+    tipoMantenimiento: "Lubricación",
     responsable: "Carlos Ruiz"
   }
 ];
@@ -60,19 +64,19 @@ export default function MaquinasPage() {
   const [editing, setEditing] = useState<MaquinaRecord | null>(null);
   const [form] = Form.useForm();
 
-  // 🧠 Guardar automáticamente los datos en localStorage cuando cambian
+  // 🧠 Guardar automáticamente en localStorage cuando cambia
   useEffect(() => {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
   }, [data]);
 
-  // ➕ Abrir modal para agregar una nueva máquina
+  // ➕ Abrir modal para agregar una máquina
   const handleAdd = () => {
     setEditing(null);
     form.resetFields();
     setModalVisible(true);
   };
 
-  // ✏️ Abrir modal para editar una máquina
+  // ✏️ Editar máquina
   const handleEdit = (record: MaquinaRecord) => {
     setEditing(record);
     form.setFieldsValue({
@@ -84,17 +88,16 @@ export default function MaquinasPage() {
     setModalVisible(true);
   };
 
-  // 💾 Guardar (agregar o editar)
+  // 💾 Guardar cambios
   const handleSave = async () => {
     try {
       const values = await form.validateFields();
-
       const nuevaFecha = values.fechaMantenimiento
         ? values.fechaMantenimiento.format("YYYY-MM-DD")
         : "";
 
       if (editing) {
-        // ✅ Editar una existente
+        // ✅ Editar
         const actualizada = data.map(item =>
           item.key === editing.key
             ? { ...values, key: editing.key, fechaMantenimiento: nuevaFecha }
@@ -103,7 +106,7 @@ export default function MaquinasPage() {
         setData(actualizada);
         message.success("Máquina modificada correctamente");
       } else {
-        // ✅ Agregar una nueva
+        // ✅ Agregar
         if (data.some(item => item.id === values.id)) {
           message.error("El ID ya existe. Ingrese uno diferente.");
           return;
@@ -115,6 +118,7 @@ export default function MaquinasPage() {
           tipo: values.tipo,
           estado: values.estado,
           fechaMantenimiento: nuevaFecha,
+          tipoMantenimiento: values.tipoMantenimiento,
           responsable: values.responsable
         };
 
@@ -130,7 +134,7 @@ export default function MaquinasPage() {
     }
   };
 
-  // 🗑️ Eliminar máquina
+  // 🗑️ Eliminar
   const handleDelete = (record: MaquinaRecord) => {
     Modal.confirm({
       title: "¿Eliminar máquina?",
@@ -149,10 +153,15 @@ export default function MaquinasPage() {
     { title: "Tipo", dataIndex: "tipo", key: "tipo" },
     { title: "Estado", dataIndex: "estado", key: "estado" },
     {
-      title: "Fecha Último Mantenimiento",
-      dataIndex: "fechaMantenimiento",
+      title: "Último Mantenimiento",
       key: "fechaMantenimiento",
-      render: (text: string) => (text ? dayjs(text).format("YYYY-MM-DD") : "")
+      render: (_: any, record: MaquinaRecord) => (
+        <span>
+          {record.fechaMantenimiento
+            ? `${dayjs(record.fechaMantenimiento).format("YYYY-MM-DD")} (${record.tipoMantenimiento})`
+            : "—"}
+        </span>
+      )
     },
     { title: "Responsable", dataIndex: "responsable", key: "responsable" },
     {
@@ -178,12 +187,7 @@ export default function MaquinasPage() {
         Registrar máquina
       </Button>
 
-      <Table
-        columns={columns}
-        dataSource={data}
-        pagination={false}
-        rowKey="key"
-      />
+      <Table columns={columns} dataSource={data} pagination={false} rowKey="key" />
 
       <Modal
         title={editing ? "Editar máquina" : "Registrar máquina"}
@@ -227,11 +231,26 @@ export default function MaquinasPage() {
           </Form.Item>
 
           <Form.Item
-            label="Fecha Último Mantenimiento"
+            label="Fecha del Último Mantenimiento"
             name="fechaMantenimiento"
             rules={[{ required: true, message: "Seleccione la fecha" }]}
           >
             <DatePicker format="YYYY-MM-DD" />
+          </Form.Item>
+
+          <Form.Item
+            label="Tipo de Mantenimiento"
+            name="tipoMantenimiento"
+            rules={[{ required: true, message: "Seleccione el tipo de mantenimiento" }]}
+          >
+            <Select placeholder="Seleccione un tipo">
+              <Option value="Preventivo">Preventivo</Option>
+              <Option value="Correctivo">Correctivo</Option>
+              <Option value="Lubricación">Lubricación</Option>
+              <Option value="Calibración">Calibración</Option>
+              <Option value="Limpieza">Limpieza</Option>
+              <Option value="Otro">Otro</Option>
+            </Select>
           </Form.Item>
 
           <Form.Item
