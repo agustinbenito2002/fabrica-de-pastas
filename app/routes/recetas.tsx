@@ -134,21 +134,16 @@ const RecetasPage: React.FC = () => {
     };
 
     return (
-        <div>
+        <div style={{ width: "100%" }}>
             <h2>Listado de Recetas</h2>
-            <Button
-                type="primary"
-                onClick={() => {
-                    setEditingId(null);
-                    form.resetFields();
-                    setModalVisible(true);
-                }}
-                style={{ marginBottom: 16 }}
-            >
-                Nueva Receta
-            </Button>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
+                <Button type="primary" onClick={() => { setEditingId(null); form.resetFields(); setModalVisible(true); }}>
+                    Nueva Receta
+                </Button>
+                {/* opcional: buscador */}
+            </div>
 
-            <Table columns={columns} dataSource={recetas} rowKey="id" />
+            <Table columns={columns} dataSource={recetas} rowKey="id" style={{ width: "100%" }} pagination={{ pageSize: 10 }} />
 
             <Modal
                 title={editingId ? "Editar Receta" : "Nueva Receta"}

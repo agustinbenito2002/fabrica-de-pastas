@@ -86,6 +86,20 @@ const OrdenesPage: React.FC = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [editing, setEditing] = useState<Orden | null>(null);
   const [form] = Form.useForm();
+  const [busqueda, setBusqueda] = useState("");
+
+  const ordenesFiltradas = ordenes.filter((o) => {
+    const q = busqueda.trim().toLowerCase();
+    if (!q) return true;
+    return (
+      o.cliente.toLowerCase().includes(q) ||
+      o.tipo.toLowerCase().includes(q) ||
+      o.estado.toLowerCase().includes(q) ||
+      o.fecha.includes(q) ||
+      (o.productos && String(o.productos).toLowerCase().includes(q)) ||
+      String(o.id).includes(q)
+    );
+  });
 
   useEffect(() => {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(ordenes));
@@ -212,11 +226,22 @@ const OrdenesPage: React.FC = () => {
   return (
     <div>
       <h2>Listado de Órdenes</h2>
-      <Button type="primary" onClick={handleAdd} style={{ marginBottom: 16 }}>
-        Nueva Orden
-      </Button>
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
+        <div>
+          <Button type="primary" onClick={handleAdd} style={{ marginRight: 8 }}>
+            Nueva Orden
+          </Button>
+        </div>
+        <Input.Search
+          placeholder="Buscar por cliente, fecha, tipo, estado, producto o id"
+          value={busqueda}
+          onChange={(e) => setBusqueda(e.target.value)}
+          style={{ width: 360 }}
+          allowClear
+        />
+      </div>
 
-      <Table columns={columns} dataSource={ordenes} rowKey="id" />
+      <Table columns={columns} dataSource={ordenesFiltradas} rowKey="id" />
 
       <Modal
         title={editing ? "Editar Orden" : "Nueva Orden"}

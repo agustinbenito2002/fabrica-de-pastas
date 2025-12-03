@@ -24,6 +24,7 @@ interface Producto {
 
 interface Compra {
   id: number;
+  numero?: string;
   proveedor: string;
   fecha: string;
   estado: "Pendiente" | "En Proceso" | "Completada" | "Cancelada";
@@ -82,6 +83,7 @@ const ComprasPage: React.FC = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [editing, setEditing] = useState<Compra | null>(null);
   const [form] = Form.useForm();
+  const [busqueda, setBusqueda] = useState("");
 
   useEffect(() => {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(compras));
@@ -204,14 +206,37 @@ const ComprasPage: React.FC = () => {
     }
   ];
 
+  const comprasFiltradas = compras.filter((c) => {
+    const q = busqueda.trim().toLowerCase();
+    if (!q) return true;
+    return (
+      c.proveedor?.toLowerCase().includes(q) ||
+      c.numero?.toLowerCase().includes(q) ||
+      c.fecha?.includes(q) ||
+      (c.productos && String(c.productos).toLowerCase().includes(q)) ||
+      String(c.id).includes(q)
+    );
+  });
+
   return (
     <div>
       <h2>Órdenes de Compra</h2>
-      <Button type="primary" onClick={handleAdd} style={{ marginBottom: 16 }}>
-        Nueva Orden de Compra
-      </Button>
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
+        <div>
+          <Button type="primary" onClick={handleAdd} style={{ marginRight: 8 }}>
+            Nueva Orden de Compra
+          </Button>
+        </div>
+        <Input.Search
+          placeholder="Buscar por proveedor, número, fecha, producto o id"
+          value={busqueda}
+          onChange={(e) => setBusqueda(e.target.value)}
+          style={{ width: 360 }}
+          allowClear
+        />
+      </div>
 
-      <Table columns={columns} dataSource={compras} rowKey="id" />
+      <Table columns={columns} dataSource={comprasFiltradas} rowKey="id" />
 
       <Modal
         title={editing ? "Editar Orden de Compra" : "Nueva Orden de Compra"}

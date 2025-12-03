@@ -91,33 +91,15 @@ export default function MateriasPage() {
   ];
 
   return (
-    <div>
-      <h2>Listado de Materias Primas</h2>
+    <div style={{ width: "100%" }}>
+      <h2>Materia Prima</h2>
 
-      <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
-        <Button type="primary" onClick={handleAdd}>Registrar materia prima</Button>
-        <Button onClick={() => {
-          const csv = ["ID,Nombre,Cantidad", ...data.map(d => `${d.id},${d.nombre},${d.cantidad}`)].join("\n");
-          const blob = new Blob([csv], { type: "text/csv" });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = "materias_primas.csv";
-          a.click();
-          URL.revokeObjectURL(url);
-        }}>Exportar CSV</Button>
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
+        <Button type="primary" onClick={handleAdd}>Nueva Materia Prima</Button>
+        {/* opcional: buscador aquí */}
       </div>
 
-      <Table
-        columns={columns}
-        dataSource={data}
-        rowKey="key"
-        pagination={false}
-        onRow={(record) => ({
-          onClick: () => handleSelect(record),
-          style: { cursor: "pointer" }
-        })}
-      />
+      <Table columns={columns} dataSource={data} rowKey="id" style={{ width: "100%" }} pagination={{ pageSize: 10 }} />
 
       {/* Modal rápido para actualizar cantidad */}
       <Modal

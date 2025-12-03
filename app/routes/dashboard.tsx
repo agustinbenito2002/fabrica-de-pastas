@@ -8,6 +8,8 @@ import ProveedoresPage from "./proveedores";
 import OrdenesPage from "./ordenes";
 import compraspage from "./compras";
 import ComprasPage from "./compras";
+import OrdenesMantenimientoPage from "./ordenesmantenimiento";
+import PresupuestoPage from "./presupuesto";
 
 export default function Dashboard() {
     const [mostrarListado, setMostrarListado] = useState(false);
@@ -15,7 +17,8 @@ export default function Dashboard() {
     const [mostrarMaquinas, setMostrarMaquinas] = useState(false);
     const [mostrarProveedores, setMostrarProveedores] = useState(false);
     const [mostrarOrdenes, setMostrarOrdenes] = useState(false);
-    const [mostrarCompras, setMostrarCompras] = useState(false);
+    const [mostrarOrdenesMantenimiento, setMostrarOrdenesMantenimiento] = useState(false);
+    const [mostrarPresupuesto, setMostrarPresupuesto] = useState(false);
 
     return (
         <SidebarLayout>
@@ -54,12 +57,19 @@ export default function Dashboard() {
                     </Button>
                     <OrdenesPage />
                 </div>
-            ) : mostrarCompras ? (
+            ) : mostrarOrdenesMantenimiento ? (
                 <div>
-                    <Button style={{ marginBottom: 16 }} onClick={() => setMostrarCompras(false)}>
+                    <Button style={{ marginBottom: 16 }} onClick={() => setMostrarOrdenesMantenimiento(false)}>
                         Volver al Dashboard
                     </Button>
-                    <ComprasPage />
+                    <OrdenesMantenimientoPage />
+                </div>
+            ) : mostrarPresupuesto ? (
+                <div>
+                    <Button style={{ marginBottom: 16 }} onClick={() => setMostrarPresupuesto(false)}>
+                        Volver al Dashboard
+                    </Button>
+                    <PresupuestoPage />
                 </div>
             ) : (
                 <>
@@ -67,12 +77,27 @@ export default function Dashboard() {
                     <p>Bienvenido al sistema de gestión de la fábrica de pastas.</p>
 
                     <div style={{ marginTop: 32, display: "flex", flexWrap: "wrap", gap: 16 }}>
-                        <Button type="primary" onClick={() => setMostrarListado(true)}>Administración de Clientes</Button>
-                        <Button type="primary" onClick={() => setMostrarComprobantes(true)}>Comprobantes de Venta</Button>
-                        <Button type="primary" onClick={() => setMostrarMaquinas(true)}>Administración de Máquinas</Button>
-                        <Button type="primary" onClick={() => setMostrarProveedores(true)}>Administración de Proveedores</Button>
-                        <Button type="primary" onClick={() => setMostrarOrdenes(true)}>Administrar Órdenes de ventas</Button>
-                        <Button type="primary" onClick={() => setMostrarCompras(true)}>Administrar órdenes de Compras</Button>
+                        <Button type="primary" onClick={() => setMostrarListado(true)}>
+                            Administración de Clientes
+                        </Button>
+                        <Button type="primary" onClick={() => setMostrarComprobantes(true)}>
+                            Comprobantes de Venta
+                        </Button>
+                        <Button type="primary" onClick={() => setMostrarMaquinas(true)}>
+                            Administración de Máquinas
+                        </Button>
+                        <Button type="primary" onClick={() => setMostrarProveedores(true)}>
+                            Administración de Proveedores
+                        </Button>
+                        <Button type="primary" onClick={() => setMostrarOrdenes(true)}>
+                            Administrar Órdenes
+                        </Button>
+                        <Button type="primary" onClick={() => setMostrarOrdenesMantenimiento(true)}>
+                            Administrar Órdenes de Mantenimiento
+                        </Button>
+                        <Button type="primary" onClick={() => setMostrarPresupuesto(true)}>
+                            Administrar Presupuesto
+                        </Button>
                     </div>
                 </>
             )}

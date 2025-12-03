@@ -62,6 +62,19 @@ const ClientesPage: React.FC = () => {
   const [form] = Form.useForm();
   const [editingId, setEditingId] = useState<number | null>(null);
 
+  // <-- ADICIÓN: buscador -->
+  const [busqueda, setBusqueda] = useState("");
+  const clientesFiltrados = clientes.filter((c) => {
+    const q = busqueda.trim().toLowerCase();
+    if (!q) return true;
+    return (
+      String(c.id).toLowerCase().includes(q) ||
+      (c.dni && c.dni.toLowerCase().includes(q)) ||
+      (c.nombre && c.nombre.toLowerCase().includes(q)) ||
+      (c.email && c.email.toLowerCase().includes(q))
+    );
+  });
+
   const handleSubmit = (values: any) => {
     if (editingId) {
       // Editar cliente existente
@@ -101,43 +114,14 @@ const ClientesPage: React.FC = () => {
   const columns: ColumnsType<Cliente> = [
     { title: "ID", dataIndex: "id", key: "id" },
     { title: "DNI", dataIndex: "dni", key: "dni" },
-    { title: "CUIT", dataIndex: "cuit", key: "cuit" },
     { title: "Nombre", dataIndex: "nombre", key: "nombre" },
     { title: "Email", dataIndex: "email", key: "email" },
     { title: "Teléfono", dataIndex: "telefono", key: "telefono" },
     { title: "Dirección", dataIndex: "direccion", key: "direccion" },
     {
-      title: "Estado Deuda",
-      dataIndex: "estadoDeuda",
-      key: "estadoDeuda",
-      render: (text, record) => (
-        <span>
-          {record.estadoDeuda ? (
-            <span style={{ color: "red", fontWeight: "bold" }}>Con deuda</span>
-          ) : (
-            <span style={{ color: "green" }}>Sin deuda</span>
-          )}
-        </span>
-      ),
-    },
-    {
-      title: "Monto",
-      dataIndex: "deuda",
-      key: "deuda",
-      render: (text, record) => (
-        <span>
-          {record.estadoDeuda ? (
-            <>${record.deuda.toFixed(2)}</>
-          ) : (
-            "$0.00"
-          )}
-        </span>
-      ),
-    },
-    {
       title: "Acciones",
       key: "acciones",
-      render: (_, record) => (
+      render: (_: any, record: Cliente) => (
         <span>
           <Button
             type="link"
@@ -158,22 +142,44 @@ const ClientesPage: React.FC = () => {
   ];
 
   return (
-    <div style={{ maxWidth: 1000, margin: "0 auto", padding: 24 }}>
-      <h1>Listado de Clientes</h1>
+    <div style={{ width: "100%" }}>
+      <h2>Administración de Clientes</h2>
 
-      <Button
-        type="primary"
-        onClick={() => {
-          setEditingId(null);
-          form.resetFields();
-          setModalVisible(true);
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          marginBottom: 16,
         }}
-        style={{ marginBottom: 16 }}
       >
-        Nuevo Cliente
-      </Button>
+        <Button
+          type="primary"
+          onClick={() => {
+            setEditingId(null);
+            form.resetFields();
+            setModalVisible(true);
+          }}
+        >
+          Nuevo Cliente
+        </Button>
 
-      <Table columns={columns} dataSource={clientes} rowKey="id" />
+        {/* <-- ADICIÓN: Input.Search para clientes --> */}
+        <Input.Search
+          placeholder="Buscar por ID, DNI o nombre"
+          value={busqueda}
+          onChange={(e) => setBusqueda(e.target.value)}
+          style={{ width: 360 }}
+          allowClear
+        />
+      </div>
+
+      <Table
+        columns={columns}
+        dataSource={clientesFiltrados}
+        rowKey="id"
+        style={{ width: "100%" }}
+        pagination={{ pageSize: 10 }}
+      />
 
       <Modal
         title={editingId ? "Editar Cliente" : "Nuevo Cliente"}

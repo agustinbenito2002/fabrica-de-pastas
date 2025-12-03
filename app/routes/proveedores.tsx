@@ -34,7 +34,7 @@ const initialData: ProveedorRecord[] = [
   }
 ];
 
-export default function ProveedoresPage() {
+const ProveedoresPage: React.FC = () => {
   const [data, setData] = useState<ProveedorRecord[]>(() => {
     const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
     return saved ? JSON.parse(saved) : initialData;
@@ -114,6 +114,19 @@ export default function ProveedoresPage() {
     });
   };
 
+  // <-- ADICIÓN: buscador -->
+  const [busqueda, setBusqueda] = useState("");
+  const proveedoresFiltrados = data.filter(p => {
+    const q = busqueda.trim().toLowerCase();
+    if (!q) return true;
+    return (
+      String(p.id).toLowerCase().includes(q) ||
+      (p.nombre && p.nombre.toLowerCase().includes(q)) ||
+      (p.cuit && p.cuit.toLowerCase().includes(q)) ||
+      (p.email && p.email.toLowerCase().includes(q))
+    );
+  });
+
   const columns = [
     { title: "ID", dataIndex: "id", key: "id" },
     { title: "Nombre", dataIndex: "nombre", key: "nombre" },
@@ -138,21 +151,30 @@ export default function ProveedoresPage() {
   ];
 
   return (
-    <div>
-      <h2>Listado de Proveedores</h2>
-      <Button
-        type="primary"
-        style={{ marginBottom: 16 }}
-        onClick={handleAdd}
-      >
-        Registrar proveedor
-      </Button>
+    <div style={{ width: "100%" }}>
+      <h2>Proveedores</h2>
+
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
+        <Button type="primary" onClick={() => { setEditing(null); form.resetFields(); setModalVisible(true); }}>
+          Nuevo Proveedor
+        </Button>
+
+        {/* <-- ADICIÓN: Input.Search para proveedores --> */}
+        <Input.Search
+          placeholder="Buscar por ID o nombre"
+          value={busqueda}
+          onChange={(e) => setBusqueda(e.target.value)}
+          style={{ width: 360 }}
+          allowClear
+        />
+      </div>
 
       <Table
-        dataSource={data}
         columns={columns}
-        pagination={false}
-        rowKey="key"
+        dataSource={proveedoresFiltrados}
+        rowKey="id"
+        style={{ width: "100%" }}
+        pagination={{ pageSize: 10 }}
       />
 
       <Modal
@@ -228,3 +250,5 @@ export default function ProveedoresPage() {
     </div>
   );
 }
+
+export default ProveedoresPage;

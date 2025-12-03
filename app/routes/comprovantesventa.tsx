@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Modal, Form, Input, Button, InputNumber, Space, message } from "antd";
+import { Modal, Form, Input, Button, InputNumber, Space, message, Table } from "antd";
 
 const LOCAL_STORAGE_KEY = "comprobantes-listado";
 
@@ -105,83 +105,81 @@ const ComprobantesVentaPage: React.FC = () => {
     setEditingComprobante(null);
   };
 
-  return (
-    <div style={{ maxWidth: 950, margin: "0 auto", padding: 24 }}>
-      <input
-        type="text"
-        value={busqueda}
-        onChange={(e) => setBusqueda(e.target.value)}
-        placeholder="Buscar por cliente, nro de pedido o fecha"
-        style={{
-          marginBottom: 16,
-          width: "100%",
-          padding: 8,
-          fontSize: 16,
-          borderRadius: 4,
-          border: "1px solid #ccc",
-        }}
-      />
-
-      <button
-        style={{
-          marginBottom: 24,
-          padding: "8px 16px",
-          fontSize: 16,
-          background: "#1890ff",
-          color: "#fff",
-          border: "none",
-          borderRadius: 4,
-          cursor: "pointer",
-        }}
-        onClick={handleNuevo}
-      >
-        Registrar comprobante
-      </button>
-
-      <h2>Comprobantes de Venta</h2>
-      <table style={{ width: "100%", borderCollapse: "collapse" }}>
-        <thead>
-          <tr style={{ background: "#f5f5f5" }}>
-            <th style={{ border: "1px solid #ddd", padding: 8 }}>Fecha</th>
-            <th style={{ border: "1px solid #ddd", padding: 8 }}>Nro Pedido</th>
-            <th style={{ border: "1px solid #ddd", padding: 8 }}>Cliente</th>
-            <th style={{ border: "1px solid #ddd", padding: 8 }}>Productos</th>
-            <th style={{ border: "1px solid #ddd", padding: 8 }}>Precio Total</th>
-            <th style={{ border: "1px solid #ddd", padding: 8 }}>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {comprobantesFiltrados.map((comprobante) => (
-            <tr key={comprobante.id}>
-              <td style={{ border: "1px solid #ddd", padding: 8 }}>{comprobante.fecha}</td>
-              <td style={{ border: "1px solid #ddd", padding: 8 }}>{comprobante.nroPedido}</td>
-              <td style={{ border: "1px solid #ddd", padding: 8 }}>{comprobante.cliente}</td>
-              <td style={{ border: "1px solid #ddd", padding: 8 }}>
-                {comprobante.productos.map((prod, idx) => (
-                  <div key={idx}>
-                    {prod.nombre} (x{prod.cantidad}) - ${prod.precio}
-                  </div>
-                ))}
-              </td>
-              <td style={{ border: "1px solid #ddd", padding: 8 }}>
-                ${calcularTotal(comprobante.productos)}
-              </td>
-              <td style={{ border: "1px solid #ddd", padding: 8, textAlign: "center" }}>
-                <Button
-                  type="primary"
-                  style={{ marginRight: 8 }}
-                  onClick={() => handleModificar(comprobante.id)}
-                >
-                  Editar
-                </Button>
-                <Button danger onClick={() => handleEliminar(comprobante.id)}>
-                  Eliminar
-                </Button>
-              </td>
-            </tr>
+  const columns = [
+    {
+      title: "Fecha",
+      dataIndex: "fecha",
+      key: "fecha",
+    },
+    {
+      title: "Nro Pedido",
+      dataIndex: "nroPedido",
+      key: "nroPedido",
+    },
+    {
+      title: "Cliente",
+      dataIndex: "cliente",
+      key: "cliente",
+    },
+    {
+      title: "Productos",
+      dataIndex: "productos",
+      key: "productos",
+      render: (productos: Producto[]) => (
+        <div>
+          {productos.map((prod, idx) => (
+            <div key={idx}>
+              {prod.nombre} (x{prod.cantidad}) - ${prod.precio}
+            </div>
           ))}
-        </tbody>
-      </table>
+        </div>
+      ),
+    },
+    {
+      title: "Precio Total",
+      dataIndex: "productos",
+      key: "precioTotal",
+      render: (productos: Producto[]) => `$${calcularTotal(productos)}`,
+    },
+    {
+      title: "Acciones",
+      key: "acciones",
+      render: (_: any, comprobante: Comprobante) => (
+        <div>
+          <Button
+            type="primary"
+            onClick={() => handleModificar(comprobante.id)}
+            style={{ marginRight: 8 }}
+          >
+            Editar
+          </Button>
+          <Button danger onClick={() => handleEliminar(comprobante.id)}>
+            Eliminar
+          </Button>
+        </div>
+      ),
+    },
+  ];
+
+  return (
+    <div style={{ width: "100%" }}>
+      <h2>Comprobantes de Venta</h2>
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
+        <div>
+          <Button type="primary" onClick={handleNuevo} style={{ marginRight: 8 }}>
+            Nuevo Comprobante
+          </Button>
+        </div>
+        <Input.Search
+          placeholder="Buscar por cliente, número, fecha o producto"
+          value={busqueda}
+          onChange={(e) => setBusqueda(e.target.value)}
+          style={{ width: 360 }}
+          allowClear
+        />
+      </div>
+
+      <Table columns={columns} dataSource={comprobantesFiltrados} rowKey="id" style={{ width: "100%" }} pagination={{ pageSize: 10 }} />
 
       {/* Modal de agregar o editar comprobante */}
       <Modal
