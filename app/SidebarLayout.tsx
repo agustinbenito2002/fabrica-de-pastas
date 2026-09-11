@@ -2,13 +2,25 @@ import React, { useState } from "react";
 import { Layout, Menu } from "antd";
 import {
   DashboardOutlined,
+  FileDoneOutlined,
+  FileTextOutlined,
+  DollarOutlined,
+  OrderedListOutlined,
   ShoppingOutlined,
+  ToolOutlined,
   UserOutlined,
   SettingOutlined,
   BookOutlined,
 } from "@ant-design/icons";
+import ClientesPage from "./routes/clientes";
+import ComprobantesVentaPage from "./routes/comprovantesventa";
 import MateriasPage from "./routes/materias";
+import MaquinasPage from "./routes/maquinas";
+import OrdenesPage from "./routes/ordenes";
+import OrdenesMantenimientoPage from "./routes/ordenesmantenimiento";
+import PresupuestoPage from "./routes/presupuesto";
 import ProductosPage from "./routes/productos";
+import ProveedoresPage from "./routes/proveedores";
 import RecetasPage from "./routes/recetas";  // Add this import
 
 const { Sider, Content } = Layout;
@@ -27,6 +39,20 @@ const menuItems = [
       { key: "materia-prima", label: "Materia Prima" },
       { key: "productos", label: "Productos" },
       { key: "recetas", label: "Recetas" },
+      { key: "maquinas", icon: <ToolOutlined />, label: "Máquinas" },
+      { key: "ordenes-mantenimiento", icon: <FileDoneOutlined />, label: "Órdenes de Mantenimiento" },
+    ],
+  },
+  {
+    key: "venta",
+    icon: <DollarOutlined />,
+    label: "Venta",
+    children: [
+      { key: "clientes", icon: <UserOutlined />, label: "Administración de Clientes" },
+      { key: "comprobantes-venta", icon: <FileTextOutlined />, label: "Comprobantes de Venta" },
+      { key: "proveedores", icon: <UserOutlined />, label: "Administración de Proveedores" },
+      { key: "ordenes", icon: <OrderedListOutlined />, label: "Administrar Órdenes" },
+      { key: "presupuesto", icon: <DollarOutlined />, label: "Administrar Presupuesto" },
     ],
   },
   {
@@ -51,10 +77,24 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
 
   const renderContent = () => {
     switch (currentPage) {
+      case "clientes":
+        return <ClientesPage />;
+      case "comprobantes-venta":
+        return <ComprobantesVentaPage />;
       case "materia-prima":
         return <MateriasPage />;
+      case "maquinas":
+        return <MaquinasPage />;
+      case "ordenes":
+        return <OrdenesPage />;
+      case "ordenes-mantenimiento":
+        return <OrdenesMantenimientoPage />;
+      case "presupuesto":
+        return <PresupuestoPage />;
       case "productos":
         return <ProductosPage />;
+      case "proveedores":
+        return <ProveedoresPage />;
       case "recetas":     // Add this case
         return <RecetasPage />;
       default:

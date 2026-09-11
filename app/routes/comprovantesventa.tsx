@@ -36,7 +36,11 @@ type Comprobante = {
   productos: Producto[];
 };
 
-const ComprobantesVentaPage: React.FC = () => {
+interface ComprobantesVentaPageProps {
+  abrirNuevo?: boolean;
+}
+
+const ComprobantesVentaPage: React.FC<ComprobantesVentaPageProps> = ({ abrirNuevo = false }) => {
   const [comprobantes, setComprobantes] = useState<Comprobante[]>(() => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
     return stored ? JSON.parse(stored) : comprobantesEjemplo;
@@ -74,6 +78,12 @@ const ComprobantesVentaPage: React.FC = () => {
     form.resetFields();
     setShowFormModal(true);
   };
+
+  useEffect(() => {
+    if (abrirNuevo) {
+      handleNuevo();
+    }
+  }, [abrirNuevo]);
 
   const handleModificar = (id: number) => {
     const comprobante = comprobantes.find((c) => c.id === id);

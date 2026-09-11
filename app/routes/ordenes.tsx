@@ -73,7 +73,11 @@ const initialData: Orden[] = [
   }
 ];
 
-const OrdenesPage: React.FC = () => {
+interface OrdenesPageProps {
+  abrirNuevaOrden?: boolean;
+}
+
+const OrdenesPage: React.FC<OrdenesPageProps> = ({ abrirNuevaOrden = false }) => {
   const [ordenes, setOrdenes] = useState<Orden[]>(() => {
     const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (saved) {
@@ -111,6 +115,12 @@ const OrdenesPage: React.FC = () => {
     form.setFieldsValue({ productos: [] });
     setModalVisible(true);
   };
+
+  useEffect(() => {
+    if (abrirNuevaOrden) {
+      handleAdd();
+    }
+  }, [abrirNuevaOrden]);
 
   const handleEdit = (record: Orden) => {
     setEditing(record);
