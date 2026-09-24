@@ -15,11 +15,35 @@ import dayjs from "dayjs";
 
 const { Option } = Select;
 const LOCAL_STORAGE_KEY = "ordenes-listado";
+const CLIENTES_STORAGE_KEY = "clientes-listado";
+
+const clientesIniciales: ClienteRegistrado[] = [
+  { id: 1, nombre: "Juan Pérez" },
+  { id: 2, nombre: "María Gómez" },
+  { id: 3, nombre: "Carlos López" }
+];
+
+function getClientesRegistrados(): ClienteRegistrado[] {
+  const saved = localStorage.getItem(CLIENTES_STORAGE_KEY);
+  if (!saved) return clientesIniciales;
+
+  try {
+    const clientes = JSON.parse(saved);
+    return Array.isArray(clientes) ? clientes : clientesIniciales;
+  } catch {
+    return clientesIniciales;
+  }
+}
 
 interface Producto {
   nombre: string;
   cantidad: number;
   precio: number;
+}
+
+interface ClienteRegistrado {
+  id: number;
+  nombre: string;
 }
 
 interface Orden {
@@ -91,6 +115,8 @@ const OrdenesPage: React.FC<OrdenesPageProps> = ({ abrirNuevaOrden = false }) =>
   const [editing, setEditing] = useState<Orden | null>(null);
   const [form] = Form.useForm();
   const [busqueda, setBusqueda] = useState("");
+  const [clientes, setClientes] = useState<ClienteRegistrado[]>(getClientesRegistrados);
+  const productosForm = Form.useWatch("productos", form) || [];
 
   const ordenesFiltradas = ordenes.filter((o) => {
     const q = busqueda.trim().toLowerCase();
@@ -108,6 +134,12 @@ const OrdenesPage: React.FC<OrdenesPageProps> = ({ abrirNuevaOrden = false }) =>
   useEffect(() => {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(ordenes));
   }, [ordenes]);
+
+  useEffect(() => {
+    const actualizarClientes = () => setClientes(getClientesRegistrados());
+    window.addEventListener("storage", actualizarClientes);
+    return () => window.removeEventListener("storage", actualizarClientes);
+  }, []);
 
   const handleAdd = () => {
     setEditing(null);
@@ -270,9 +302,15 @@ const OrdenesPage: React.FC<OrdenesPageProps> = ({ abrirNuevaOrden = false }) =>
           <Form.Item
             name="cliente"
             label="Cliente"
-            rules={[{ required: true, message: "Ingrese el cliente" }]}
+            rules={[{ required: true, message: "Seleccione el cliente" }]}
           >
-            <Input />
+            <Select placeholder="Seleccione un cliente" showSearch optionFilterProp="label">
+              {clientes.map((cliente) => (
+                <Option key={cliente.id} value={cliente.nombre} label={cliente.nombre}>
+                  {cliente.nombre}
+                </Option>
+              ))}
+            </Select>
           </Form.Item>
 
           <Form.Item
@@ -342,9 +380,20 @@ const OrdenesPage: React.FC<OrdenesPageProps> = ({ abrirNuevaOrden = false }) =>
                     <Form.Item
                       {...restField}
                       name={[name, "precio"]}
-                      rules={[{ required: true, message: "Ingrese precio" }]}
+                      label="Precio unitario"
+                      rules={[{ required: true, message: "Ingrese el precio unitario" }]}
                     >
-                      <Input type="number" placeholder="Precio" min={0} step="0.01" />
+                      <Input type="number" placeholder="Precio unitario" min={0} step="0.01" />
+                    </Form.Item>
+
+                    <Form.Item label="Precio total">
+                      <Input
+                        value={(
+                          Number(productosForm[name]?.cantidad || 0) *
+                          Number(productosForm[name]?.precio || 0)
+                        ).toFixed(2)}
+                        readOnly
+                      />
                     </Form.Item>
 
                     <Button
