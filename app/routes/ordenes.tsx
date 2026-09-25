@@ -12,6 +12,8 @@ import {
 } from "antd";
 import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
+import { getProductosRegistrados } from "../utils/productos";
+import type { ProductoRegistrado } from "../utils/productos";
 
 const { Option } = Select;
 const LOCAL_STORAGE_KEY = "ordenes-listado";
@@ -36,6 +38,7 @@ function getClientesRegistrados(): ClienteRegistrado[] {
 }
 
 interface Producto {
+  id?: string;
   nombre: string;
   cantidad: number;
   precio: number;
@@ -116,6 +119,7 @@ const OrdenesPage: React.FC<OrdenesPageProps> = ({ abrirNuevaOrden = false }) =>
   const [form] = Form.useForm();
   const [busqueda, setBusqueda] = useState("");
   const [clientes, setClientes] = useState<ClienteRegistrado[]>(getClientesRegistrados);
+  const [productos, setProductos] = useState<ProductoRegistrado[]>(getProductosRegistrados);
   const productosForm = Form.useWatch("productos", form) || [];
 
   const ordenesFiltradas = ordenes.filter((o) => {
@@ -139,6 +143,12 @@ const OrdenesPage: React.FC<OrdenesPageProps> = ({ abrirNuevaOrden = false }) =>
     const actualizarClientes = () => setClientes(getClientesRegistrados());
     window.addEventListener("storage", actualizarClientes);
     return () => window.removeEventListener("storage", actualizarClientes);
+  }, []);
+
+  useEffect(() => {
+    const actualizarProductos = () => setProductos(getProductosRegistrados());
+    window.addEventListener("storage", actualizarProductos);
+    return () => window.removeEventListener("storage", actualizarProductos);
   }, []);
 
   const handleAdd = () => {
@@ -350,28 +360,47 @@ const OrdenesPage: React.FC<OrdenesPageProps> = ({ abrirNuevaOrden = false }) =>
           <Form.List name="productos">
             {(fields, { add, remove }) => (
               <div>
-                <h4>Productos</h4>
                 {fields.map(({ key, name, ...restField }) => (
                   <Space
                     key={key}
                     align="baseline"
+                    className="product-row product-row-with-total"
                     style={{
-                      display: "flex",
-                      marginBottom: 8,
-                      justifyContent: "space-between"
+                      marginBottom: 8
                     }}
                   >
                     <Form.Item
                       {...restField}
                       name={[name, "nombre"]}
+                      label="Productos"
                       rules={[{ required: true, message: "Ingrese el producto" }]}
                     >
-                      <Input placeholder="Nombre" />
+                      <Select
+                        placeholder="Seleccione un producto"
+                        showSearch
+                        optionFilterProp="label"
+                        onChange={(nombre) => {
+                          const producto = productos.find((item) => item.nombre === nombre);
+                          form.setFieldValue(["productos", name, "id"], producto?.id);
+                          form.setFieldValue(["productos", name, "precio"], producto?.precio ?? 0);
+                        }}
+                      >
+                        {productos.map((producto) => (
+                          <Option key={producto.id} value={producto.nombre} label={producto.nombre}>
+                            {producto.nombre}
+                          </Option>
+                        ))}
+                      </Select>
+                    </Form.Item>
+
+                    <Form.Item name={[name, "id"]} label="ID">
+                      <Input placeholder="ID" readOnly />
                     </Form.Item>
 
                     <Form.Item
                       {...restField}
                       name={[name, "cantidad"]}
+                      label="Cantidad"
                       rules={[{ required: true, message: "Ingrese cantidad" }]}
                     >
                       <Input type="number" placeholder="Cantidad" min={1} />

@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Modal, Form, Input, InputNumber, Space, message } from 'antd';
+import { Table, Button, Modal, Form, Input, InputNumber, Space, message, Select } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
+import { getProductosRegistrados } from '../utils/productos';
+import type { ProductoRegistrado } from '../utils/productos';
+
+const { Option } = Select;
 
 interface Ingrediente {
     id: string;
@@ -24,6 +28,7 @@ const RecetasPage: React.FC = () => {
     const [modalVisible, setModalVisible] = useState(false);
     const [form] = Form.useForm();
     const [editingId, setEditingId] = useState<number | null>(null);
+    const [productos, setProductos] = useState<ProductoRegistrado[]>(getProductosRegistrados);
 
     useEffect(() => {
         if (typeof window !== 'undefined') {
@@ -32,6 +37,12 @@ const RecetasPage: React.FC = () => {
                 setRecetas(JSON.parse(savedRecetas));
             }
         }
+    }, []);
+
+    useEffect(() => {
+        const actualizarProductos = () => setProductos(getProductosRegistrados());
+        window.addEventListener('storage', actualizarProductos);
+        return () => window.removeEventListener('storage', actualizarProductos);
     }, []);
 
     const saveRecetas = (newRecetas: Receta[]) => {
@@ -176,14 +187,29 @@ const RecetasPage: React.FC = () => {
                                 noStyle
                                 rules={[{ required: true, message: 'Ingrese ID del producto' }]}
                             >
-                                <Input placeholder="ID del producto" style={{ width: '30%' }} />
+                                <Input placeholder="ID del producto" readOnly style={{ width: '30%' }} />
                             </Form.Item>
                             <Form.Item
                                 name={['productoFinal', 'nombre']}
                                 noStyle
                                 rules={[{ required: true, message: 'Ingrese nombre del producto' }]}
                             >
-                                <Input placeholder="Nombre del producto" style={{ width: '70%' }} />
+                                <Select
+                                    placeholder="Seleccione un producto"
+                                    showSearch
+                                    optionFilterProp="label"
+                                    style={{ width: '70%' }}
+                                    onChange={(nombre) => {
+                                        const producto = productos.find((item) => item.nombre === nombre);
+                                        form.setFieldValue(['productoFinal', 'id'], producto?.id);
+                                    }}
+                                >
+                                    {productos.map((producto) => (
+                                        <Option key={producto.id} value={producto.nombre} label={producto.nombre}>
+                                            {producto.nombre}
+                                        </Option>
+                                    ))}
+                                </Select>
                             </Form.Item>
                         </Input.Group>
                     </Form.Item>
@@ -192,20 +218,34 @@ const RecetasPage: React.FC = () => {
                         {(fields, { add, remove }) => (
                             <>
                                 {fields.map(({ key, name, ...restField }) => (
-                                    <Space key={key} style={{ display: 'flex', marginBottom: 8 }} align="baseline">
+                                    <Space key={key} className="product-row" style={{ marginBottom: 8 }} align="baseline">
                                         <Form.Item
                                             {...restField}
                                             name={[name, 'id']}
                                             rules={[{ required: true, message: 'ID requerido' }]}
                                         >
-                                            <Input placeholder="ID materia prima" />
+                                            <Input placeholder="ID producto" readOnly />
                                         </Form.Item>
                                         <Form.Item
                                             {...restField}
                                             name={[name, 'nombre']}
                                             rules={[{ required: true, message: 'Nombre requerido' }]}
                                         >
-                                            <Input placeholder="Nombre ingrediente" />
+                                            <Select
+                                                placeholder="Seleccione un producto"
+                                                showSearch
+                                                optionFilterProp="label"
+                                                onChange={(nombre) => {
+                                                    const producto = productos.find((item) => item.nombre === nombre);
+                                                    form.setFieldValue(['ingredientes', name, 'id'], producto?.id);
+                                                }}
+                                            >
+                                                {productos.map((producto) => (
+                                                    <Option key={producto.id} value={producto.nombre} label={producto.nombre}>
+                                                        {producto.nombre}
+                                                    </Option>
+                                                ))}
+                                            </Select>
                                         </Form.Item>
                                         <Form.Item
                                             {...restField}

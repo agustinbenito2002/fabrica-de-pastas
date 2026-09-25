@@ -1,7 +1,30 @@
 import React, { useState, useEffect } from "react";
-import { Modal, Form, Input, Button, InputNumber, Space, message, Table } from "antd";
+import { Modal, Form, Input, Button, InputNumber, Space, message, Table, Select } from "antd";
+import { getProductosRegistrados } from "../utils/productos";
+import type { ProductoRegistrado } from "../utils/productos";
 
 const LOCAL_STORAGE_KEY = "comprobantes-listado";
+const CLIENTES_STORAGE_KEY = "clientes-listado";
+
+const clientesIniciales = [
+  { id: 1, nombre: "Juan Pérez" },
+  { id: 2, nombre: "María Gómez" },
+  { id: 3, nombre: "Carlos López" }
+];
+
+function getClientesRegistrados() {
+  const saved = localStorage.getItem(CLIENTES_STORAGE_KEY);
+  if (!saved) return clientesIniciales;
+
+  try {
+    const clientes = JSON.parse(saved);
+    return Array.isArray(clientes) ? clientes : clientesIniciales;
+  } catch {
+    return clientesIniciales;
+  }
+}
+
+const { Option } = Select;
 
 const comprobantesEjemplo = [
   {
@@ -27,7 +50,7 @@ function calcularTotal(productos: { cantidad: number; precio: number }[]) {
   return productos.reduce((acc, p) => acc + p.cantidad * p.precio, 0);
 }
 
-type Producto = { nombre: string; cantidad: number; precio: number };
+type Producto = { id?: string; nombre: string; cantidad: number; precio: number };
 type Comprobante = {
   id: number;
   fecha: string;
@@ -49,12 +72,26 @@ const ComprobantesVentaPage: React.FC<ComprobantesVentaPageProps> = ({ abrirNuev
   const [showFormModal, setShowFormModal] = useState(false);
   const [editingComprobante, setEditingComprobante] = useState<Comprobante | null>(null);
   const [busqueda, setBusqueda] = useState("");
+  const [clientes, setClientes] = useState(getClientesRegistrados);
+  const [productos, setProductos] = useState<ProductoRegistrado[]>(getProductosRegistrados);
   const [form] = Form.useForm();
 
   // Guardar cambios automáticamente
   useEffect(() => {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(comprobantes));
   }, [comprobantes]);
+
+  useEffect(() => {
+    const actualizarClientes = () => setClientes(getClientesRegistrados());
+    window.addEventListener("storage", actualizarClientes);
+    return () => window.removeEventListener("storage", actualizarClientes);
+  }, []);
+
+  useEffect(() => {
+    const actualizarProductos = () => setProductos(getProductosRegistrados());
+    window.addEventListener("storage", actualizarProductos);
+    return () => window.removeEventListener("storage", actualizarProductos);
+  }, []);
 
   const comprobantesFiltrados = comprobantes.filter(
     (c) =>
@@ -223,9 +260,15 @@ const ComprobantesVentaPage: React.FC<ComprobantesVentaPageProps> = ({ abrirNuev
           <Form.Item
             name="cliente"
             label="Cliente"
-            rules={[{ required: true, message: "Ingrese el nombre del cliente" }]}
+            rules={[{ required: true, message: "Seleccione el cliente" }]}
           >
-            <Input />
+            <Select placeholder="Seleccione un cliente" showSearch optionFilterProp="label">
+              {clientes.map((cliente) => (
+                <Option key={cliente.id} value={cliente.nombre} label={cliente.nombre}>
+                  {cliente.nombre}
+                </Option>
+              ))}
+            </Select>
           </Form.Item>
 
           <Form.List name="productos">
@@ -233,13 +276,31 @@ const ComprobantesVentaPage: React.FC<ComprobantesVentaPageProps> = ({ abrirNuev
               <>
                 <label><strong>Productos</strong></label>
                 {fields.map(({ key, name, ...restField }) => (
-                  <Space key={key} style={{ display: "flex", marginBottom: 8 }} align="baseline">
+                  <Space key={key} className="product-row" style={{ marginBottom: 8 }} align="baseline">
                     <Form.Item
                       {...restField}
                       name={[name, "nombre"]}
-                      rules={[{ required: true, message: "Ingrese nombre del producto" }]}
+                      rules={[{ required: true, message: "Seleccione el producto" }]}
                     >
-                      <Input placeholder="Producto" />
+                      <Select
+                        placeholder="Seleccione un producto"
+                        showSearch
+                        optionFilterProp="label"
+                        onChange={(nombre) => {
+                          const producto = productos.find((item) => item.nombre === nombre);
+                          form.setFieldValue(["productos", name, "id"], producto?.id);
+                          form.setFieldValue(["productos", name, "precio"], producto?.precio ?? 0);
+                        }}
+                      >
+                        {productos.map((producto) => (
+                          <Option key={producto.id} value={producto.nombre} label={producto.nombre}>
+                            {producto.nombre}
+                          </Option>
+                        ))}
+                      </Select>
+                    </Form.Item>
+                    <Form.Item {...restField} name={[name, "id"]} label="ID">
+                      <Input placeholder="ID" readOnly />
                     </Form.Item>
                     <Form.Item
                       {...restField}

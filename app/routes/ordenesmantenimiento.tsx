@@ -12,6 +12,8 @@ import {
   InputNumber
 } from "antd";
 import dayjs from "dayjs";
+import { getMaquinasRegistradas } from "../utils/maquinas";
+import type { MaquinaRegistrada } from "../utils/maquinas";
 
 const { Option } = Select;
 const LOCAL_STORAGE_KEY = "ordenes-mantenimiento-listado";
@@ -19,6 +21,7 @@ const LOCAL_STORAGE_KEY = "ordenes-mantenimiento-listado";
 interface OrdenMantenimiento {
     id: number;
     maquina: string;
+    maquinaId?: string;
     fecha: string;
     tipoMantenimiento: 'Preventivo' | 'Correctivo' | 'Lubricación';
     estado: 'Pendiente' | 'En Proceso' | 'Completada' | 'Cancelada';
@@ -60,10 +63,17 @@ const OrdenesMantenimientoPage: React.FC = () => {
     const [editing, setEditing] = useState<OrdenMantenimiento | null>(null);
     const [form] = Form.useForm();
     const [busqueda, setBusqueda] = useState("");
+    const [maquinas, setMaquinas] = useState<MaquinaRegistrada[]>(getMaquinasRegistradas);
 
     useEffect(() => {
         localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(ordenes));
     }, [ordenes]);
+
+    useEffect(() => {
+        const actualizarMaquinas = () => setMaquinas(getMaquinasRegistradas());
+        window.addEventListener("storage", actualizarMaquinas);
+        return () => window.removeEventListener("storage", actualizarMaquinas);
+    }, []);
 
     const ordenesFiltradas = ordenes.filter((o) => {
         const q = busqueda.trim().toLowerCase();
@@ -86,8 +96,13 @@ const OrdenesMantenimientoPage: React.FC = () => {
 
     const handleEdit = (record: OrdenMantenimiento) => {
         setEditing(record);
+        const maquina = maquinas.find((item) =>
+            record.maquina === item.tipo || record.maquina === `${item.id} (${item.tipo})`
+        );
         form.setFieldsValue({
             ...record,
+            maquina: maquina?.tipo ?? record.maquina,
+            maquinaId: record.maquinaId ?? maquina?.id,
             fecha: dayjs(record.fecha)
         });
         setModalVisible(true);
@@ -206,9 +221,27 @@ const OrdenesMantenimientoPage: React.FC = () => {
                     <Form.Item
                         name="maquina"
                         label="Máquina"
-                        rules={[{ required: true, message: "Ingrese la máquina" }]}
+                        rules={[{ required: true, message: "Seleccione la máquina" }]}
                     >
-                        <Input placeholder="Ej: M-001 (Amasadora)" />
+                        <Select
+                            placeholder="Seleccione una máquina"
+                            showSearch
+                            optionFilterProp="label"
+                            onChange={(tipo) => {
+                                const maquina = maquinas.find((item) => item.tipo === tipo);
+                                form.setFieldValue("maquinaId", maquina?.id);
+                            }}
+                        >
+                            {maquinas.map((maquina) => (
+                                <Option key={maquina.id} value={maquina.tipo} label={maquina.tipo}>
+                                    {maquina.tipo}
+                                </Option>
+                            ))}
+                        </Select>
+                    </Form.Item>
+
+                    <Form.Item name="maquinaId" label="ID de máquina">
+                        <Input placeholder="ID" readOnly />
                     </Form.Item>
 
                     <Form.Item

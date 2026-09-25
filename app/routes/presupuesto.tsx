@@ -12,11 +12,14 @@ import {
   Select
 } from "antd";
 import dayjs from "dayjs";
+import { getProductosRegistrados } from "../utils/productos";
+import type { ProductoRegistrado } from "../utils/productos";
 
 const { Option } = Select;
 const LOCAL_STORAGE_KEY = "presupuestos-listado";
 
 interface PresupuestoItem {
+  id?: string;
   descripcion: string;
   cantidad: number;
   precio: number;
@@ -59,12 +62,19 @@ const PresupuestoPages: React.FC = () => {
   const [editing, setEditing] = useState<Presupuesto | null>(null);
   const [form] = Form.useForm();
   const [busqueda, setBusqueda] = useState("");
+  const [productos, setProductos] = useState<ProductoRegistrado[]>(getProductosRegistrados);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(presupuestos));
     }
   }, [presupuestos]);
+
+  useEffect(() => {
+    const actualizarProductos = () => setProductos(getProductosRegistrados());
+    window.addEventListener("storage", actualizarProductos);
+    return () => window.removeEventListener("storage", actualizarProductos);
+  }, []);
 
   const presupuestosFiltrados = presupuestos.filter((p) => {
     const q = busqueda.trim().toLowerCase();
@@ -254,13 +264,31 @@ const PresupuestoPages: React.FC = () => {
             {(fields, { add, remove }) => (
               <>
                 {fields.map(({ key, name, ...restField }) => (
-                  <Space key={key} style={{ display: "flex", marginBottom: 8 }} align="baseline">
+                  <Space key={key} className="product-row" style={{ marginBottom: 8 }} align="baseline">
                     <Form.Item
                       {...restField}
                       name={[name, "descripcion"]}
                       rules={[{ required: true, message: "Requerido" }]}
                     >
-                      <Input placeholder="Descripción" />
+                      <Select
+                        placeholder="Seleccione un producto"
+                        showSearch
+                        optionFilterProp="label"
+                        onChange={(nombre) => {
+                          const producto = productos.find((item) => item.nombre === nombre);
+                          form.setFieldValue(["items", name, "id"], producto?.id);
+                          form.setFieldValue(["items", name, "precio"], producto?.precio ?? 0);
+                        }}
+                      >
+                        {productos.map((producto) => (
+                          <Option key={producto.id} value={producto.nombre} label={producto.nombre}>
+                            {producto.nombre}
+                          </Option>
+                        ))}
+                      </Select>
+                    </Form.Item>
+                    <Form.Item {...restField} name={[name, "id"]} label="ID">
+                      <Input placeholder="ID" readOnly />
                     </Form.Item>
                     <Form.Item
                       {...restField}

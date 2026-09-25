@@ -12,11 +12,14 @@ import {
 } from "antd";
 import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
+import { getProductosRegistrados } from "../utils/productos";
+import type { ProductoRegistrado } from "../utils/productos";
 
 const { Option } = Select;
 const LOCAL_STORAGE_KEY = "compras-listado";
 
 interface Producto {
+  id?: string;
   nombre: string;
   cantidad: number;
   precio: number;
@@ -84,10 +87,17 @@ const ComprasPage: React.FC = () => {
   const [editing, setEditing] = useState<Compra | null>(null);
   const [form] = Form.useForm();
   const [busqueda, setBusqueda] = useState("");
+  const [productos, setProductos] = useState<ProductoRegistrado[]>(getProductosRegistrados);
 
   useEffect(() => {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(compras));
   }, [compras]);
+
+  useEffect(() => {
+    const actualizarProductos = () => setProductos(getProductosRegistrados());
+    window.addEventListener("storage", actualizarProductos);
+    return () => window.removeEventListener("storage", actualizarProductos);
+  }, []);
 
   const handleAdd = () => {
     setEditing(null);
@@ -290,10 +300,9 @@ const ComprasPage: React.FC = () => {
                   <Space
                     key={key}
                     align="baseline"
+                    className="product-row"
                     style={{
-                      display: "flex",
-                      marginBottom: 8,
-                      justifyContent: "space-between"
+                      marginBottom: 8
                     }}
                   >
                     <Form.Item
@@ -301,7 +310,26 @@ const ComprasPage: React.FC = () => {
                       name={[name, "nombre"]}
                       rules={[{ required: true, message: "Ingrese el producto" }]}
                     >
-                      <Input placeholder="Producto" />
+                      <Select
+                        placeholder="Seleccione un producto"
+                        showSearch
+                        optionFilterProp="label"
+                        onChange={(nombre) => {
+                          const producto = productos.find((item) => item.nombre === nombre);
+                          form.setFieldValue(["productos", name, "id"], producto?.id);
+                          form.setFieldValue(["productos", name, "precio"], producto?.precio ?? 0);
+                        }}
+                      >
+                        {productos.map((producto) => (
+                          <Option key={producto.id} value={producto.nombre} label={producto.nombre}>
+                            {producto.nombre}
+                          </Option>
+                        ))}
+                      </Select>
+                    </Form.Item>
+
+                    <Form.Item {...restField} name={[name, "id"]} label="ID">
+                      <Input placeholder="ID" readOnly />
                     </Form.Item>
 
                     <Form.Item
