@@ -293,7 +293,7 @@ const OrdenesPage: React.FC<OrdenesPageProps> = ({ abrirNuevaOrden = false }) =>
         />
       </div>
 
-      <Table columns={columns} dataSource={ordenesFiltradas} rowKey="id" />
+      <Table columns={columns} dataSource={ordenesFiltradas} rowKey="id" bordered />
 
       <Modal
         title={editing ? "Editar Orden" : "Nueva Orden"}

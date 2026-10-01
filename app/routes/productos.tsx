@@ -178,7 +178,7 @@ export default function ProductosPage() {
         {/* opcional: buscador */}
       </div>
 
-      <Table columns={columns} dataSource={data} rowKey="key" style={{ width: "100%" }} pagination={{ pageSize: 10 }} />
+      <Table columns={columns} dataSource={data} rowKey="key" bordered style={{ width: "100%" }} pagination={{ pageSize: 10 }} />
 
       {/* Modal rápido para actualizar cantidad */}
       <Modal

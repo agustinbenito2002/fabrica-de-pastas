@@ -246,7 +246,7 @@ const ComprasPage: React.FC = () => {
         />
       </div>
 
-      <Table columns={columns} dataSource={comprasFiltradas} rowKey="id" />
+      <Table columns={columns} dataSource={comprasFiltradas} rowKey="id" bordered />
 
       <Modal
         title={editing ? "Editar Orden de Compra" : "Nueva Orden de Compra"}

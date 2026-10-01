@@ -99,7 +99,7 @@ export default function MateriasPage() {
         {/* opcional: buscador aquí */}
       </div>
 
-      <Table columns={columns} dataSource={data} rowKey="id" style={{ width: "100%" }} pagination={{ pageSize: 10 }} />
+      <Table columns={columns} dataSource={data} rowKey="id" bordered style={{ width: "100%" }} pagination={{ pageSize: 10 }} />
 
       {/* Modal rápido para actualizar cantidad */}
       <Modal

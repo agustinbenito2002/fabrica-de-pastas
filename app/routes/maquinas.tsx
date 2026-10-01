@@ -187,7 +187,7 @@ export default function MaquinasPage() {
         Registrar máquina
       </Button>
 
-      <Table columns={columns} dataSource={data} pagination={false} rowKey="key" />
+      <Table columns={columns} dataSource={data} pagination={false} rowKey="key" bordered />
 
       <Modal
         title={editing ? "Editar máquina" : "Registrar máquina"}

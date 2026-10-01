@@ -177,6 +177,7 @@ const ClientesPage: React.FC = () => {
         columns={columns}
         dataSource={clientesFiltrados}
         rowKey="id"
+        bordered
         style={{ width: "100%" }}
         pagination={{ pageSize: 10 }}
       />

@@ -154,7 +154,7 @@ const RecetasPage: React.FC = () => {
                 {/* opcional: buscador */}
             </div>
 
-            <Table columns={columns} dataSource={recetas} rowKey="id" style={{ width: "100%" }} pagination={{ pageSize: 10 }} />
+            <Table columns={columns} dataSource={recetas} rowKey="id" bordered style={{ width: "100%" }} pagination={{ pageSize: 10 }} />
 
             <Modal
                 title={editingId ? "Editar Receta" : "Nueva Receta"}

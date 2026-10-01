@@ -203,7 +203,7 @@ const OrdenesMantenimientoPage: React.FC = () => {
                 />
             </div>
 
-            <Table columns={columns} dataSource={ordenesFiltradas} rowKey="id" />
+            <Table columns={columns} dataSource={ordenesFiltradas} rowKey="id" bordered />
 
             <Modal
                 title={editing ? "Editar Orden de Mantenimiento" : "Nueva Orden de Mantenimiento"}

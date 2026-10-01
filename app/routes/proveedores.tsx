@@ -151,7 +151,7 @@ const ProveedoresPage: React.FC = () => {
   ];
 
   return (
-    <div style={{ width: "100%" }}>
+    <div className="proveedores-page" style={{ width: "100%", minWidth: 0, boxSizing: "border-box", background: "#fff" }}>
       <h2>Proveedores</h2>
 
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
@@ -173,7 +173,9 @@ const ProveedoresPage: React.FC = () => {
         columns={columns}
         dataSource={proveedoresFiltrados}
         rowKey="id"
-        style={{ width: "100%" }}
+        bordered
+        style={{ width: "100%", maxWidth: "100%" }}
+        scroll={{ x: "max-content" }}
         pagination={{ pageSize: 10 }}
       />
 

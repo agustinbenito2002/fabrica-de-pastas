@@ -14,6 +14,16 @@ body {
   }
 }
 
+.ant-table-wrapper .ant-table-container {
+  border: 1px solid #000 !important;
+}
+
+.ant-table-wrapper .ant-table-thead > tr > th,
+.ant-table-wrapper .ant-table-tbody > tr > td,
+.ant-table-wrapper .ant-table-summary > table > tbody > tr > td {
+  border-color: #000 !important;
+}
+
 .product-row {
   display: grid !important;
   grid-template-columns: minmax(0, 1.8fr) 72px 88px 125px 32px;

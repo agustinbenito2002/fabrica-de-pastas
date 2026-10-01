@@ -226,7 +226,7 @@ const ComprobantesVentaPage: React.FC<ComprobantesVentaPageProps> = ({ abrirNuev
         />
       </div>
 
-      <Table columns={columns} dataSource={comprobantesFiltrados} rowKey="id" style={{ width: "100%" }} pagination={{ pageSize: 10 }} />
+      <Table columns={columns} dataSource={comprobantesFiltrados} rowKey="id" bordered style={{ width: "100%" }} pagination={{ pageSize: 10 }} />
 
       {/* Modal de agregar o editar comprobante */}
       <Modal

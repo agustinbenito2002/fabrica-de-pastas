@@ -185,7 +185,7 @@ const PresupuestoPages: React.FC = () => {
   ];
 
   return (
-    <div>
+    <div className="presupuestos-page" style={{ width: "100%", minWidth: 0, boxSizing: "border-box", background: "#fff" }}>
       <h2>Presupuestos</h2>
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
         <Button type="primary" onClick={handleAdd}>
@@ -200,7 +200,14 @@ const PresupuestoPages: React.FC = () => {
         />
       </div>
 
-      <Table columns={columns} dataSource={presupuestosFiltrados} rowKey="id" />
+      <Table
+        columns={columns}
+        dataSource={presupuestosFiltrados}
+        rowKey="id"
+        bordered
+        style={{ width: "100%", maxWidth: "100%" }}
+        scroll={{ x: "max-content" }}
+      />
 
       <Modal
         title={editing ? "Editar Presupuesto" : "Nuevo Presupuesto"}
