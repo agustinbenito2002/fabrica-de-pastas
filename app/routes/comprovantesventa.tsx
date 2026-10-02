@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Modal, Form, Input, Button, InputNumber, Space, message, Table, Select } from "antd";
 import { getProductosRegistrados } from "../utils/productos";
 import type { ProductoRegistrado } from "../utils/productos";
+import { PageHeader } from "../components/PageHeader";
 
 const LOCAL_STORAGE_KEY = "comprobantes-listado";
 const CLIENTES_STORAGE_KEY = "clientes-listado";
@@ -102,12 +103,18 @@ const ComprobantesVentaPage: React.FC<ComprobantesVentaPageProps> = ({ abrirNuev
 
   // ✅ Eliminación completamente funcional
   const handleEliminar = (id: number) => {
-    if (window.confirm("¿Desea eliminar este comprobante?")) {
-      const nuevos = comprobantes.filter((c) => c.id !== id);
-      setComprobantes(nuevos);
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(nuevos));
-      message.success("Comprobante eliminado correctamente");
-    }
+    Modal.confirm({
+      title: "¿Desea eliminar este comprobante?",
+      okText: "Eliminar",
+      okType: "danger",
+      cancelText: "Cancelar",
+      onOk: () => {
+        const nuevos = comprobantes.filter((c) => c.id !== id);
+        setComprobantes(nuevos);
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(nuevos));
+        message.success("Comprobante eliminado correctamente");
+      },
+    });
   };
 
   const handleNuevo = () => {
@@ -192,25 +199,21 @@ const ComprobantesVentaPage: React.FC<ComprobantesVentaPageProps> = ({ abrirNuev
       title: "Acciones",
       key: "acciones",
       render: (_: any, comprobante: Comprobante) => (
-        <div>
-          <Button
-            type="primary"
-            onClick={() => handleModificar(comprobante.id)}
-            style={{ marginRight: 8 }}
-          >
+        <Space>
+          <Button type="link" onClick={() => handleModificar(comprobante.id)}>
             Editar
           </Button>
-          <Button danger onClick={() => handleEliminar(comprobante.id)}>
+          <Button type="link" danger onClick={() => handleEliminar(comprobante.id)}>
             Eliminar
           </Button>
-        </div>
+        </Space>
       ),
     },
   ];
 
   return (
     <div style={{ width: "100%" }}>
-      <h2>Comprobantes de Venta</h2>
+      <PageHeader title="Comprobantes de Venta" />
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
         <div>
           <Button type="primary" onClick={handleNuevo} style={{ marginRight: 8 }}>

@@ -14,6 +14,7 @@ import {
 import dayjs from "dayjs";
 import { getMaquinasRegistradas } from "../utils/maquinas";
 import type { MaquinaRegistrada } from "../utils/maquinas";
+import { PageHeader } from "../components/PageHeader";
 
 const { Option } = Select;
 const LOCAL_STORAGE_KEY = "ordenes-mantenimiento-listado";
@@ -189,7 +190,7 @@ const OrdenesMantenimientoPage: React.FC = () => {
 
     return (
         <div>
-            <h2>Órdenes de Mantenimiento</h2>
+            <PageHeader title="Órdenes de Mantenimiento" />
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
                 <Button type="primary" onClick={handleAdd}>
                     Nueva Orden de Mantenimiento

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Layout, Menu } from "antd";
+import { Layout, Menu, Typography } from "antd";
 import {
   DashboardOutlined,
   FileDoneOutlined,
@@ -10,7 +10,6 @@ import {
   ToolOutlined,
   UserOutlined,
   SettingOutlined,
-  BookOutlined,
 } from "@ant-design/icons";
 import ClientesPage from "./routes/clientes";
 import ComprobantesVentaPage from "./routes/comprovantesventa";
@@ -23,7 +22,7 @@ import ProductosPage from "./routes/productos";
 import ProveedoresPage from "./routes/proveedores";
 import RecetasPage from "./routes/recetas";  // Add this import
 
-const { Sider, Content } = Layout;
+const { Header, Sider, Content } = Layout;
 
 const menuItems = [
   {
@@ -103,44 +102,38 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <Layout style={{ minHeight: "100vh" }}>
+    <Layout className="app-shell">
       <Sider
-        theme="light"
+        className="app-sider"
+        theme="dark"
         collapsible
+        breakpoint="lg"
         collapsed={collapsed}
         onCollapse={(value) => setCollapsed(value)}
       >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            height: 64,
-            padding: "0 8px",
-            borderBottom: "1px solid #eee",
-            marginBottom: 8,
-            overflow: "hidden",
-          }}
-        >
-          <img src="/logo.jpg" alt="Logo" style={{ height: 40, marginRight: collapsed ? 0 : 8 }} />
+        <div className={`brand-lockup${collapsed ? " is-collapsed" : ""}`}>
+          <img src="/logo.jpg" alt="Fábrica de Pastas" />
           {!collapsed && (
-            <span style={{ fontWeight: "bold", fontSize: 18, color: "#333" }}>
-              Fabrica de Pastas 2025
-            </span>
+            <Typography.Text strong className="brand-name">Fábrica de Pastas</Typography.Text>
           )}
         </div>
 
         <Menu
           mode="inline"
+          theme="dark"
           defaultSelectedKeys={["dashboard"]}
           selectedKeys={[currentPage]}
           items={menuItems}
           onClick={handleMenuClick}
         />
       </Sider>
-      <Layout>
-        <Content style={{ margin: "24px 16px 0", background: "#fff", padding: 24 }}>
-          {renderContent()}
+      <Layout className="app-main">
+        <Header className="app-header">
+          <Typography.Text strong>Gestión de producción y ventas</Typography.Text>
+          <Typography.Text type="secondary">Fábrica de Pastas 2025</Typography.Text>
+        </Header>
+        <Content className="app-content">
+          <div className="page-surface">{renderContent()}</div>
         </Content>
       </Layout>
     </Layout>

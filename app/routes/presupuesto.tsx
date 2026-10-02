@@ -14,6 +14,7 @@ import {
 import dayjs from "dayjs";
 import { getProductosRegistrados } from "../utils/productos";
 import type { ProductoRegistrado } from "../utils/productos";
+import { PageHeader } from "../components/PageHeader";
 
 const { Option } = Select;
 const LOCAL_STORAGE_KEY = "presupuestos-listado";
@@ -186,7 +187,7 @@ const PresupuestoPages: React.FC = () => {
 
   return (
     <div className="presupuestos-page" style={{ width: "100%", minWidth: 0, boxSizing: "border-box", background: "#fff" }}>
-      <h2>Presupuestos</h2>
+      <PageHeader title="Presupuestos" />
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
         <Button type="primary" onClick={handleAdd}>
           Nuevo Presupuesto

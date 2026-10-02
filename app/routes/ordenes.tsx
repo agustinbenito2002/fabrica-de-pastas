@@ -14,6 +14,7 @@ import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { getProductosRegistrados } from "../utils/productos";
 import type { ProductoRegistrado } from "../utils/productos";
+import { PageHeader } from "../components/PageHeader";
 
 const { Option } = Select;
 const LOCAL_STORAGE_KEY = "ordenes-listado";
@@ -277,7 +278,7 @@ const OrdenesPage: React.FC<OrdenesPageProps> = ({ abrirNuevaOrden = false }) =>
 
   return (
     <div>
-      <h2>Listado de Órdenes</h2>
+      <PageHeader title="Listado de Órdenes" />
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
         <div>
           <Button type="primary" onClick={handleAdd} style={{ marginRight: 8 }}>

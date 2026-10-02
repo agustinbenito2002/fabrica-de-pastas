@@ -8,12 +8,14 @@ import {
   Select,
   DatePicker,
   message,
-  Space
+  Space,
+  Typography
 } from "antd";
 import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { getProductosRegistrados } from "../utils/productos";
 import type { ProductoRegistrado } from "../utils/productos";
+import { PageHeader } from "../components/PageHeader";
 
 const { Option } = Select;
 const LOCAL_STORAGE_KEY = "compras-listado";
@@ -230,7 +232,7 @@ const ComprasPage: React.FC = () => {
 
   return (
     <div>
-      <h2>Órdenes de Compra</h2>
+      <PageHeader title="Órdenes de Compra" />
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
         <div>
           <Button type="primary" onClick={handleAdd} style={{ marginRight: 8 }}>
@@ -295,7 +297,7 @@ const ComprasPage: React.FC = () => {
           <Form.List name="productos">
             {(fields, { add, remove }) => (
               <div>
-                <h4>Productos Comprados</h4>
+                <Typography.Title level={5}>Productos Comprados</Typography.Title>
                 {fields.map(({ key, name, ...restField }) => (
                   <Space
                     key={key}

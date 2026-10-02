@@ -3,6 +3,7 @@ import { Table, Button, Modal, Form, Input, InputNumber, Space, message, Select 
 import type { ColumnsType } from 'antd/es/table';
 import { getProductosRegistrados } from '../utils/productos';
 import type { ProductoRegistrado } from '../utils/productos';
+import { PageHeader } from '../components/PageHeader';
 
 const { Option } = Select;
 
@@ -146,7 +147,7 @@ const RecetasPage: React.FC = () => {
 
     return (
         <div style={{ width: "100%" }}>
-            <h2>Listado de Recetas</h2>
+            <PageHeader title="Listado de Recetas" />
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
                 <Button type="primary" onClick={() => { setEditingId(null); form.resetFields(); setModalVisible(true); }}>
                     Nueva Receta

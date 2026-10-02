@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Table, Button, Modal, Form, Input, message } from "antd";
+import { PageHeader } from "../components/PageHeader";
 
 const LOCAL_STORAGE_KEY = "proveedores-listado";
 
@@ -152,7 +153,7 @@ const ProveedoresPage: React.FC = () => {
 
   return (
     <div className="proveedores-page" style={{ width: "100%", minWidth: 0, boxSizing: "border-box", background: "#fff" }}>
-      <h2>Proveedores</h2>
+      <PageHeader title="Proveedores" />
 
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
         <Button type="primary" onClick={() => { setEditing(null); form.resetFields(); setModalVisible(true); }}>

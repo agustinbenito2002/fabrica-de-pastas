@@ -6,26 +6,16 @@ import {
   Scripts,
   ScrollRestoration,
 } from "react-router";
+import { App as AntApp, Button, ConfigProvider, Result, theme, Typography } from "antd";
+import esES from "antd/locale/es_ES";
 
 import type { Route } from "./+types/root";
+import "antd/dist/reset.css";
 import "./app.css";
-
-export const links: Route.LinksFunction = () => [
-  { rel: "preconnect", href: "https://fonts.googleapis.com" },
-  {
-    rel: "preconnect",
-    href: "https://fonts.gstatic.com",
-    crossOrigin: "anonymous",
-  },
-  {
-    rel: "stylesheet",
-    href: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap",
-  },
-];
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="es">
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -42,7 +32,51 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  return <Outlet />;
+  return (
+    <ConfigProvider
+      locale={esES}
+      theme={{
+        algorithm: theme.darkAlgorithm,
+        token: {
+          colorPrimary: "#45a875",
+          colorInfo: "#45a875",
+          colorBgBase: "#090b0a",
+          colorBgLayout: "#0b0e0c",
+          colorBgContainer: "#151a17",
+          colorBgElevated: "#1b211d",
+          colorBorder: "#424d46",
+          colorSplit: "#343e37",
+          colorText: "#edf3ee",
+          colorTextSecondary: "#a4b0a7",
+          borderRadius: 6,
+          fontFamily: "Aptos, 'Segoe UI', sans-serif",
+        },
+        components: {
+          Layout: {
+            bodyBg: "#0b0e0c",
+            siderBg: "#090b0a",
+            headerBg: "#101411",
+          },
+          Menu: {
+            darkItemBg: "#090b0a",
+            darkSubMenuItemBg: "#0d100e",
+            darkItemSelectedBg: "#183323",
+            darkItemHoverBg: "#1a211c",
+            itemBorderRadius: 4,
+          },
+          Table: {
+            headerBg: "#202722",
+            rowHoverBg: "#1d2520",
+            borderColor: "#424d46",
+          },
+        },
+      }}
+    >
+      <AntApp>
+        <Outlet />
+      </AntApp>
+    </ConfigProvider>
+  );
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
@@ -62,14 +96,13 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   }
 
   return (
-    <main className="pt-16 p-4 container mx-auto">
-      <h1>{message}</h1>
-      <p>{details}</p>
-      {stack && (
-        <pre className="w-full p-4 overflow-x-auto">
-          <code>{stack}</code>
-        </pre>
-      )}
-    </main>
+    <Result
+      status={message === "404" ? "404" : "error"}
+      title={message}
+      subTitle={details}
+      extra={<Button type="primary" href="/">Volver al inicio</Button>}
+    >
+      {stack && <Typography.Paragraph code>{stack}</Typography.Paragraph>}
+    </Result>
   );
 }

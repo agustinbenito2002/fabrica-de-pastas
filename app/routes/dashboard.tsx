@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Button } from "antd";
+import { Button, Flex, Space, Typography } from "antd";
+import { ArrowLeftOutlined, FileAddOutlined, ShoppingCartOutlined } from "@ant-design/icons";
 import { SidebarLayout } from "../SidebarLayout";
 import ComprobantesVentaPage from "./comprovantesventa";
 import OrdenesPage from "./ordenes";
@@ -12,30 +13,34 @@ export default function Dashboard() {
         <SidebarLayout>
             {mostrarNuevaOrden ? (
                 <>
-                    <Button style={{ marginBottom: 16 }} onClick={() => setMostrarNuevaOrden(false)}>
+                    <Button icon={<ArrowLeftOutlined />} style={{ marginBottom: 16 }} onClick={() => setMostrarNuevaOrden(false)}>
                         Volver al Dashboard
                     </Button>
                     <OrdenesPage abrirNuevaOrden />
                 </>
             ) : mostrarNuevoComprobante ? (
                 <>
-                    <Button style={{ marginBottom: 16 }} onClick={() => setMostrarNuevoComprobante(false)}>
+                    <Button icon={<ArrowLeftOutlined />} style={{ marginBottom: 16 }} onClick={() => setMostrarNuevoComprobante(false)}>
                         Volver al Dashboard
                     </Button>
                     <ComprobantesVentaPage abrirNuevo />
                 </>
             ) : (
                 <>
-                    <h1 style={{ fontSize: 32, fontWeight: "bold" }}>Dashboard</h1>
-                    <p>Bienvenido al sistema de gestión de la fábrica de pastas.</p>
-                    <div style={{ marginTop: 32, display: "flex", flexWrap: "wrap", gap: 16 }}>
-                        <Button type="primary" onClick={() => setMostrarNuevaOrden(true)}>
+                    <Flex vertical gap={8}>
+                        <Typography.Title level={2}>Dashboard</Typography.Title>
+                        <Typography.Paragraph type="secondary">
+                            Bienvenido al sistema de gestión de la fábrica de pastas.
+                        </Typography.Paragraph>
+                    </Flex>
+                    <Space wrap size="middle" className="dashboard-actions">
+                        <Button type="primary" icon={<ShoppingCartOutlined />} onClick={() => setMostrarNuevaOrden(true)}>
                             Crear Nueva Orden de Pedido
                         </Button>
-                        <Button type="primary" onClick={() => setMostrarNuevoComprobante(true)}>
+                        <Button icon={<FileAddOutlined />} onClick={() => setMostrarNuevoComprobante(true)}>
                             Crear Comprobante de Venta
                         </Button>
-                    </div>
+                    </Space>
                 </>
             )}
         </SidebarLayout>

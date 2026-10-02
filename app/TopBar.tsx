@@ -1,25 +1,10 @@
-import React from "react";
+import { Layout, Typography } from "antd";
 
 export function TopBar() {
   return (
-    <div style={{
-      width: "100%",
-      height: 64,
-      background: "#fff",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "flex-start",
-      boxShadow: "0 2px 8px #f0f1f2",
-      position: "relative",
-      zIndex: 1,
-      padding: "0 32px"
-    }}>
-      <div style={{ display: "flex", alignItems: "center" }}>
-        <img src="/welcome/logo-dark.svg" alt="Logo" style={{ height: 40, marginRight: 12 }} />
-        <span style={{ fontWeight: "bold", fontSize: 20, color: "#333" }}>
-          Fabrica de Pastas 2025
-        </span>
-      </div>
-    </div>
+    <Layout.Header className="app-header">
+      <Typography.Text strong>Fábrica de Pastas 2025</Typography.Text>
+      <Typography.Text type="secondary">Gestión de producción y ventas</Typography.Text>
+    </Layout.Header>
   );
 }

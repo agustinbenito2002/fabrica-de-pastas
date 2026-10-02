@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Table, Button, Modal, Form, Input, InputNumber, message } from "antd";
+import { PageHeader } from "../components/PageHeader";
 
 type Producto = {
   key: string;
@@ -172,7 +173,7 @@ export default function ProductosPage() {
 
   return (
     <div style={{ width: "100%" }}>
-      <h2>Productos</h2>
+      <PageHeader title="Productos" />
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
         <Button type="primary" onClick={handleAdd}>Nuevo Producto</Button>
         {/* opcional: buscador */}

@@ -1,28 +1,97 @@
-@import "tailwindcss";
-
-@theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif,
-    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+* {
+  box-sizing: border-box;
 }
 
 html,
 body {
-  @apply bg-white dark:bg-gray-950;
-
-  @media (prefers-color-scheme: dark) {
-    color-scheme: dark;
-  }
+  min-width: 320px;
+  min-height: 100%;
+  margin: 0;
+  background: #0b0e0c;
 }
 
+body {
+  font-family: Aptos, "Segoe UI", sans-serif;
+}
+
+.app-shell { min-height: 100vh; background: #0b0e0c; }
+.app-sider { border-right: 1px solid #3c473f; }
+
+.brand-lockup {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 64px;
+  padding: 0 16px;
+  overflow: hidden;
+  border-bottom: 1px solid #3c473f;
+}
+
+.brand-lockup.is-collapsed { justify-content: center; padding: 0; }
+.brand-lockup img { flex: 0 0 auto; width: 36px; height: 36px; object-fit: contain; }
+.brand-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.app-main { min-width: 0; }
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+  padding: 0 28px;
+  border-bottom: 1px solid #3c473f;
+  line-height: normal;
+}
+
+.app-content { min-width: 0; padding: 24px; }
+
+.page-surface {
+  min-height: calc(100vh - 112px);
+  min-width: 0;
+  padding: 24px;
+  overflow: hidden;
+  background: #151a17;
+  border: 1px solid #4a554d;
+  border-radius: 6px;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 18%);
+}
+
+.page-header { margin-bottom: 20px; }
+.page-title.ant-typography { margin: 0; }
+.page-header .ant-input-search { width: min(360px, 100%); }
+.dashboard-actions { margin-top: 20px; }
+.ant-table-wrapper { max-width: 100%; }
+
 .ant-table-wrapper .ant-table-container {
-  border: 1px solid #000 !important;
+  overflow: hidden;
+  border: 1px solid #4a554d;
+  border-radius: 4px;
 }
 
 .ant-table-wrapper .ant-table-thead > tr > th,
 .ant-table-wrapper .ant-table-tbody > tr > td,
 .ant-table-wrapper .ant-table-summary > table > tbody > tr > td {
-  border-color: #000 !important;
+  border-color: #424d46 !important;
 }
+
+.ant-table-wrapper .ant-table-thead > tr > th {
+  border-bottom: 1px solid #59655d !important;
+}
+
+.ant-table-wrapper .ant-table-tbody > tr > td + td,
+.ant-table-wrapper .ant-table-thead > tr > th + th {
+  border-inline-start: 1px solid #343e37;
+}
+
+.product-row {
+  padding: 10px;
+  border: 1px solid #424d46;
+  border-radius: 4px;
+  background: #101411;
+}
+
+.welcome-layout { min-height: 100vh; }
+.welcome-content { display: grid; place-items: center; padding: 24px; }
+.welcome-card { width: min(420px, calc(100vw - 48px)); }
 
 .product-row {
   display: grid !important;
@@ -90,6 +159,11 @@ body {
 }
 
 @media (max-width: 760px) {
+  .app-content { padding: 12px; }
+  .page-surface { min-height: calc(100vh - 88px); padding: 16px; }
+  .app-header { padding: 0 16px; }
+  .app-header .ant-typography-secondary { display: none; }
+
   .product-row,
   .product-row-with-total {
     grid-template-columns: minmax(150px, 1fr) 90px 100px;

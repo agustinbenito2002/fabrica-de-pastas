@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Table, Button, Modal, Form, Input, Switch, message } from "antd";
 import type { ColumnsType } from "antd/es/table";
+import { PageHeader } from "../components/PageHeader";
 
 const LOCAL_STORAGE_KEY = "clientes-listado";
 
@@ -103,12 +104,18 @@ const ClientesPage: React.FC = () => {
   };
 
   const handleEliminar = (id: number) => {
-    if (window.confirm("¿Desea eliminar este cliente?")) {
-      const nuevos = clientes.filter((c) => c.id !== id);
-      setClientes(nuevos);
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(nuevos));
-      message.success("Cliente eliminado correctamente");
-    }
+    Modal.confirm({
+      title: "¿Desea eliminar este cliente?",
+      okText: "Eliminar",
+      okType: "danger",
+      cancelText: "Cancelar",
+      onOk: () => {
+        const nuevos = clientes.filter((c) => c.id !== id);
+        setClientes(nuevos);
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(nuevos));
+        message.success("Cliente eliminado correctamente");
+      },
+    });
   };
 
   const columns: ColumnsType<Cliente> = [
@@ -143,7 +150,7 @@ const ClientesPage: React.FC = () => {
 
   return (
     <div style={{ width: "100%" }}>
-      <h2>Administración de Clientes</h2>
+      <PageHeader title="Administración de Clientes" />
 
       <div
         style={{

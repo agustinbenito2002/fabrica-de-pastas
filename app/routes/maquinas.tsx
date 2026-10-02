@@ -10,6 +10,7 @@ import {
   message
 } from "antd";
 import dayjs from "dayjs";
+import { PageHeader } from "../components/PageHeader";
 
 const { Option } = Select;
 const LOCAL_STORAGE_KEY = "maquinas-listado";
@@ -182,7 +183,7 @@ export default function MaquinasPage() {
 
   return (
     <div>
-      <h2>Listado de Máquinas</h2>
+      <PageHeader title="Listado de Máquinas" />
       <Button type="primary" onClick={handleAdd} style={{ marginBottom: 16 }}>
         Registrar máquina
       </Button>

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Table, Button, Modal, Form, Input, InputNumber, message } from "antd";
+import { PageHeader } from "../components/PageHeader";
 
 type Materia = {
   key: string;
@@ -92,7 +93,7 @@ export default function MateriasPage() {
 
   return (
     <div style={{ width: "100%" }}>
-      <h2>Materia Prima</h2>
+      <PageHeader title="Materia Prima" />
 
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
         <Button type="primary" onClick={handleAdd}>Nueva Materia Prima</Button>
