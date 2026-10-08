@@ -186,7 +186,7 @@ const PresupuestoPages: React.FC = () => {
   ];
 
   return (
-    <div className="presupuestos-page" style={{ width: "100%", minWidth: 0, boxSizing: "border-box", background: "#fff" }}>
+    <div className="presupuestos-page" style={{ width: "100%", minWidth: 0, boxSizing: "border-box" }}>
       <PageHeader title="Presupuestos" />
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
         <Button type="primary" onClick={handleAdd}>
