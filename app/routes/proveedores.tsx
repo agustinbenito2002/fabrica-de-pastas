@@ -152,7 +152,7 @@ const ProveedoresPage: React.FC = () => {
   ];
 
   return (
-    <div className="proveedores-page" style={{ width: "100%", minWidth: 0, boxSizing: "border-box", background: "#fff" }}>
+    <div className="proveedores-page" style={{ width: "100%", minWidth: 0, boxSizing: "border-box" }}>
       <PageHeader title="Proveedores" />
 
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
