@@ -1,29 +1,48 @@
 import React, { useEffect, useState } from "react";
-import { Table, Button, Modal, Form, Input, InputNumber, message } from "antd";
+import { Table, Button, Modal, Form, Input, InputNumber, message, Select } from "antd";
+import type { ColumnsType } from "antd/es/table";
 import { PageHeader } from "../components/PageHeader";
 
 type Producto = {
   key: string;
   id: string;
   nombre: string;
+  rubro: string;
+  recetaId: string;
   cantidad: number;
   precio?: number;
+};
+
+type Receta = {
+  id: number;
+  nombre: string;
 };
 
 const LOCAL_STORAGE_KEY = "productos-listado";
 const VENTAS_KEY = "ventas-listado";
 const VENTAS_APLICADAS_KEY = "ventas-aplicadas-count";
+const RECETAS_KEY = "recetas-listado";
 
 const initialData: Producto[] = [
-  { key: "1", id: "P-001", nombre: "Fideo Tallarín", cantidad: 500, precio: 120 },
-  { key: "2", id: "P-002", nombre: "Ravioles", cantidad: 300, precio: 250 },
+  { key: "1", id: "P-001", nombre: "Fideo Tallarín", rubro: "", recetaId: "", cantidad: 500, precio: 120 },
+  { key: "2", id: "P-002", nombre: "Ravioles", rubro: "", recetaId: "", cantidad: 300, precio: 250 },
 ];
+
+type ProductoGuardado = Omit<Producto, "rubro" | "recetaId"> & Partial<Pick<Producto, "rubro" | "recetaId">>;
 
 export default function ProductosPage() {
   const [data, setData] = useState<Producto[]>(() => {
     const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
-    return saved ? JSON.parse(saved) : initialData;
+    if (!saved) return initialData;
+
+    const savedData: ProductoGuardado[] = JSON.parse(saved);
+    return savedData.map(producto => ({
+      ...producto,
+      rubro: producto.rubro ?? "",
+      recetaId: producto.recetaId ?? "",
+    }));
   });
+  const [recetas, setRecetas] = useState<Receta[]>([]);
   const [modalVisible, setModalVisible] = useState(false); // para registrar/editar producto completo
   const [editing, setEditing] = useState<Producto | null>(null);
   const [form] = Form.useForm();
@@ -36,6 +55,17 @@ export default function ProductosPage() {
   useEffect(() => {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
   }, [data]);
+
+  useEffect(() => {
+    const cargarRecetas = () => {
+      const saved = localStorage.getItem(RECETAS_KEY);
+      setRecetas(saved ? JSON.parse(saved) : []);
+    };
+
+    cargarRecetas();
+    window.addEventListener("storage", cargarRecetas);
+    return () => window.removeEventListener("storage", cargarRecetas);
+  }, []);
 
   // Aplica ventas nuevas desde localStorage (espera que cada venta tenga .items: [{ id, cantidad }])
   const applyNewVentas = () => {
@@ -91,6 +121,12 @@ export default function ProductosPage() {
     setModalVisible(true);
   };
 
+  const handleEdit = (record: Producto) => {
+    setEditing(record);
+    form.setFieldsValue(record);
+    setModalVisible(true);
+  };
+
   // ahora abre modal controlado para actualizar cantidad
   const handleSelect = (record: Producto) => {
     setSelected(record);
@@ -127,7 +163,7 @@ export default function ProductosPage() {
         setData(prev =>
           prev.map(p =>
             p.key === editing.key
-              ? { ...p, nombre: values.nombre, cantidad: Number(values.cantidad), precio }
+              ? { ...p, nombre: values.nombre, rubro: values.rubro, recetaId: values.recetaId ?? "", cantidad: Number(values.cantidad), precio }
               : p
           )
         );
@@ -141,6 +177,8 @@ export default function ProductosPage() {
           key: Date.now().toString(),
           id: values.id,
           nombre: values.nombre,
+          rubro: values.rubro,
+          recetaId: values.recetaId ?? "",
           cantidad: Number(values.cantidad),
           precio
         };
@@ -155,9 +193,16 @@ export default function ProductosPage() {
     }
   };
 
-  const columns = [
+  const columns: ColumnsType<Producto> = [
     { title: "ID", dataIndex: "id", key: "id" },
     { title: "Nombre", dataIndex: "nombre", key: "nombre" },
+    { title: "Rubro", dataIndex: "rubro", key: "rubro", render: rubro => rubro || "—" },
+    {
+      title: "Receta",
+      dataIndex: "recetaId",
+      key: "receta",
+      render: recetaId => recetas.find(receta => String(receta.id) === recetaId)?.nombre || "—",
+    },
     {
       title: "Cantidad",
       dataIndex: "cantidad",
@@ -168,6 +213,15 @@ export default function ProductosPage() {
       dataIndex: "precio",
       key: "precio",
       render: (val: number) => (val || val === 0 ? `${Number(val).toFixed(2)}` : "-"),
+    },
+    {
+      title: "Acciones",
+      key: "acciones",
+      render: (_: unknown, record: Producto) => (
+        <Button type="link" onClick={() => handleEdit(record)}>
+          Editar
+        </Button>
+      ),
     },
   ];
 
@@ -210,6 +264,19 @@ export default function ProductosPage() {
           </Form.Item>
           <Form.Item label="Nombre" name="nombre" rules={[{ required: true, message: "Ingrese nombre" }]}>
             <Input />
+          </Form.Item>
+          <Form.Item label="Rubro" name="rubro" rules={[{ required: true, message: "Ingrese rubro" }]}>
+            <Input />
+          </Form.Item>
+          <Form.Item label="Receta" name="recetaId">
+            <Select
+              allowClear
+              placeholder="Seleccione una receta"
+              options={recetas.map(receta => ({
+                value: String(receta.id),
+                label: receta.nombre,
+              }))}
+            />
           </Form.Item>
           <Form.Item label="Cantidad" name="cantidad" rules={[{ required: true, message: "Ingrese cantidad" }]}>
             <InputNumber min={0} style={{ width: "100%" }} />

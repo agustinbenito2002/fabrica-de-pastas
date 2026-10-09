@@ -35,7 +35,7 @@ const menuItems = [
     icon: <ShoppingOutlined />,
     label: "Inventario",
     children: [
-      { key: "materia-prima", label: "Materia Prima" },
+      { key: "insumos", label: "Insumos" },
       { key: "productos", label: "Productos" },
       { key: "recetas", label: "Recetas" },
       { key: "maquinas", icon: <ToolOutlined />, label: "Máquinas" },
@@ -80,7 +80,7 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
         return <ClientesPage />;
       case "comprobantes-venta":
         return <ComprobantesVentaPage />;
-      case "materia-prima":
+      case "insumos":
         return <MateriasPage />;
       case "maquinas":
         return <MaquinasPage />;
