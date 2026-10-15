@@ -63,23 +63,63 @@ body {
 
 .ant-table-wrapper .ant-table-container {
   overflow: hidden;
-  border: 1px solid #4a554d;
-  border-radius: 4px;
+  border: 1px solid #39473e;
+  border-radius: 8px;
+  background: #151a17;
+  box-shadow: 0 6px 18px rgb(0 0 0 / 16%);
 }
 
 .ant-table-wrapper .ant-table-thead > tr > th,
 .ant-table-wrapper .ant-table-tbody > tr > td,
 .ant-table-wrapper .ant-table-summary > table > tbody > tr > td {
-  border-color: #424d46 !important;
+  border-color: #303b33 !important;
 }
 
 .ant-table-wrapper .ant-table-thead > tr > th {
-  border-bottom: 1px solid #59655d !important;
+  padding: 14px 16px;
+  color: #dce8df;
+  font-weight: 600;
+  white-space: nowrap;
+  background: #1b241e;
+  border-bottom: 1px solid #46554a !important;
 }
 
 .ant-table-wrapper .ant-table-tbody > tr > td + td,
 .ant-table-wrapper .ant-table-thead > tr > th + th {
-  border-inline-start: 1px solid #343e37;
+  border-inline-start: 1px solid #29342d;
+}
+
+.ant-table-wrapper .ant-table-tbody > tr > td {
+  padding: 13px 16px;
+}
+
+.ant-table-wrapper .ant-table-tbody > tr:nth-child(even) > td {
+  background: #171e19;
+}
+
+.ant-table-wrapper .ant-table-tbody > tr.ant-table-row:hover > td {
+  background: #1e2a22 !important;
+}
+
+.ant-table-wrapper .ant-table-tbody > tr:last-child > td {
+  border-bottom: 0;
+}
+
+.ant-table-wrapper .ant-table-pagination.ant-pagination {
+  margin: 16px 4px 4px;
+}
+
+.ant-table-wrapper .ant-pagination .ant-pagination-item {
+  border-color: #39473e;
+  background: #151a17;
+}
+
+.ant-table-wrapper .ant-pagination .ant-pagination-item-active {
+  border-color: #45a875;
+}
+
+.ant-table-wrapper .ant-table-placeholder > td {
+  background: #151a17 !important;
 }
 
 .product-row {
@@ -163,6 +203,11 @@ body {
   .page-surface { min-height: calc(100vh - 88px); padding: 16px; }
   .app-header { padding: 0 16px; }
   .app-header .ant-typography-secondary { display: none; }
+
+  .ant-table-wrapper .ant-table-thead > tr > th,
+  .ant-table-wrapper .ant-table-tbody > tr > td {
+    padding: 10px 12px;
+  }
 
   .product-row,
   .product-row-with-total {
