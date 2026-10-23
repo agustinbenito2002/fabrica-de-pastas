@@ -3,6 +3,7 @@ import { Modal, Form, Input, Button, InputNumber, Space, message, Table, Select 
 import { getProductosRegistrados } from "../utils/productos";
 import type { ProductoRegistrado } from "../utils/productos";
 import { PageHeader } from "../components/PageHeader";
+import { numberSorter, textSorter } from "../utils/tableSort";
 
 const LOCAL_STORAGE_KEY = "comprobantes-listado";
 const CLIENTES_STORAGE_KEY = "clientes-listado";
@@ -164,21 +165,27 @@ const ComprobantesVentaPage: React.FC<ComprobantesVentaPageProps> = ({ abrirNuev
       title: "Fecha",
       dataIndex: "fecha",
       key: "fecha",
+      sorter: textSorter((comprobante: Comprobante) => comprobante.fecha),
     },
     {
       title: "Nro Pedido",
       dataIndex: "nroPedido",
       key: "nroPedido",
+      sorter: textSorter((comprobante: Comprobante) => comprobante.nroPedido),
     },
     {
       title: "Cliente",
       dataIndex: "cliente",
       key: "cliente",
+      sorter: textSorter((comprobante: Comprobante) => comprobante.cliente),
     },
     {
       title: "Productos",
       dataIndex: "productos",
       key: "productos",
+      sorter: textSorter((comprobante: Comprobante) =>
+        comprobante.productos.map(producto => producto.nombre).join(", ")
+      ),
       render: (productos: Producto[]) => (
         <div>
           {productos.map((prod, idx) => (
@@ -193,6 +200,7 @@ const ComprobantesVentaPage: React.FC<ComprobantesVentaPageProps> = ({ abrirNuev
       title: "Precio Total",
       dataIndex: "productos",
       key: "precioTotal",
+      sorter: numberSorter((comprobante: Comprobante) => calcularTotal(comprobante.productos)),
       render: (productos: Producto[]) => `$${calcularTotal(productos)}`,
     },
     {

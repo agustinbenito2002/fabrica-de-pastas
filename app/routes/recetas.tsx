@@ -4,6 +4,7 @@ import type { ColumnsType } from 'antd/es/table';
 import { getProductosRegistrados } from '../utils/productos';
 import type { ProductoRegistrado } from '../utils/productos';
 import { PageHeader } from '../components/PageHeader';
+import { numberSorter, textSorter } from '../utils/tableSort';
 
 const { Option } = Select;
 
@@ -30,6 +31,23 @@ const RecetasPage: React.FC = () => {
     const [form] = Form.useForm();
     const [editingId, setEditingId] = useState<number | null>(null);
     const [productos, setProductos] = useState<ProductoRegistrado[]>(getProductosRegistrados);
+    const [busqueda, setBusqueda] = useState('');
+    const recetasFiltradas = recetas.filter((receta) => {
+        const q = busqueda.trim().toLowerCase();
+        if (!q) return true;
+        return [
+            String(receta.id),
+            receta.nombre,
+            receta.productoFinal?.id ?? '',
+            receta.productoFinal?.nombre ?? '',
+            ...receta.ingredientes.flatMap(ingrediente => [
+                ingrediente.id,
+                ingrediente.nombre,
+                String(ingrediente.cantidad),
+                ingrediente.unidad,
+            ]),
+        ].some(value => value.toLowerCase().includes(q));
+    });
 
     useEffect(() => {
         if (typeof window !== 'undefined') {
@@ -58,16 +76,19 @@ const RecetasPage: React.FC = () => {
             title: 'ID',
             dataIndex: 'id',
             key: 'id',
+            sorter: numberSorter((receta: Receta) => receta.id),
         },
         {
             title: 'Nombre de Receta',
             dataIndex: 'nombre',
             key: 'nombre',
+            sorter: textSorter((receta: Receta) => receta.nombre),
         },
         {
             title: 'Producto Final',
             dataIndex: 'productoFinal',
             key: 'productoFinal',
+            sorter: textSorter((receta: Receta) => receta.productoFinal?.nombre),
             render: (productoFinal) => (
                 <span>
                     {productoFinal.nombre} (ID: {productoFinal.id})
@@ -78,6 +99,9 @@ const RecetasPage: React.FC = () => {
             title: 'Ingredientes',
             dataIndex: 'ingredientes',
             key: 'ingredientes',
+            sorter: textSorter((receta: Receta) =>
+                receta.ingredientes.map(ingrediente => ingrediente.nombre).join(', ')
+            ),
             render: (ingredientes: Ingrediente[]) => (
                 <ul>
                     {ingredientes.map((ing, index) => (
@@ -152,10 +176,16 @@ const RecetasPage: React.FC = () => {
                 <Button type="primary" onClick={() => { setEditingId(null); form.resetFields(); setModalVisible(true); }}>
                     Nueva Receta
                 </Button>
-                {/* opcional: buscador */}
+                <Input.Search
+                    placeholder="Buscar por receta, producto o ingrediente"
+                    value={busqueda}
+                    onChange={(e) => setBusqueda(e.target.value)}
+                    style={{ width: 360 }}
+                    allowClear
+                />
             </div>
 
-            <Table columns={columns} dataSource={recetas} rowKey="id" bordered style={{ width: "100%" }} pagination={{ pageSize: 10 }} />
+            <Table columns={columns} dataSource={recetasFiltradas} rowKey="id" bordered style={{ width: "100%" }} pagination={{ pageSize: 10 }} />
 
             <Modal
                 title={editingId ? "Editar Receta" : "Nueva Receta"}

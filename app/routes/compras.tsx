@@ -16,6 +16,7 @@ import dayjs from "dayjs";
 import { getProductosRegistrados } from "../utils/productos";
 import type { ProductoRegistrado } from "../utils/productos";
 import { PageHeader } from "../components/PageHeader";
+import { numberSorter, textSorter } from "../utils/tableSort";
 
 const { Option } = Select;
 const LOCAL_STORAGE_KEY = "compras-listado";
@@ -171,19 +172,23 @@ const ComprasPage: React.FC = () => {
   };
 
   const columns = [
-    { title: "ID", dataIndex: "id", key: "id" },
-    { title: "Proveedor", dataIndex: "proveedor", key: "proveedor" },
+    { title: "ID", dataIndex: "id", key: "id", sorter: numberSorter((compra: Compra) => compra.id) },
+    { title: "Proveedor", dataIndex: "proveedor", key: "proveedor", sorter: textSorter((compra: Compra) => compra.proveedor) },
     {
       title: "Fecha",
       dataIndex: "fecha",
       key: "fecha",
+      sorter: textSorter((compra: Compra) => compra.fecha),
       render: (text: string) => dayjs(text).format("YYYY-MM-DD")
     },
-    { title: "Estado", dataIndex: "estado", key: "estado" },
+    { title: "Estado", dataIndex: "estado", key: "estado", sorter: textSorter((compra: Compra) => compra.estado) },
     {
       title: "Productos",
       dataIndex: "productos",
       key: "productos",
+      sorter: textSorter((compra: Compra) =>
+        compra.productos.map(producto => producto.nombre).join(", ")
+      ),
       render: (productos: Producto[]) =>
         Array.isArray(productos)
           ? productos
@@ -200,6 +205,7 @@ const ComprasPage: React.FC = () => {
       title: "Presupuesto Total",
       dataIndex: "total",
       key: "total",
+      sorter: numberSorter((compra: Compra) => compra.total),
       render: (total: number) => `$${total?.toFixed(2) || 0}`
     },
     {

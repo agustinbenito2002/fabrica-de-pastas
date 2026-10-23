@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { Table, Button, Modal, Form, Input, InputNumber, message } from "antd";
+import { Table, Button, Modal, Form, Input, InputNumber, message, Select } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { PageHeader } from "../components/PageHeader";
+import { getRubrosRegistrados } from "../utils/rubros";
+import { numberSorter, textSorter } from "../utils/tableSort";
 
 type Materia = {
   key: string;
@@ -32,6 +34,13 @@ export default function MateriasPage() {
   const [modalVisible, setModalVisible] = useState(false);
   const [editing, setEditing] = useState<Materia | null>(null);
   const [form] = Form.useForm();
+  const [rubros, setRubros] = useState(getRubrosRegistrados);
+  const [busqueda, setBusqueda] = useState("");
+  const materiasFiltradas = data.filter((materia) => {
+    const q = busqueda.trim().toLowerCase();
+    return !q || [materia.id, materia.nombre, materia.rubro, String(materia.cantidad)]
+      .some(value => value.toLowerCase().includes(q));
+  });
 
   // modal rápido para cantidad
   const [confirmVisible, setConfirmVisible] = useState(false);
@@ -41,6 +50,12 @@ export default function MateriasPage() {
   useEffect(() => {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
   }, [data]);
+
+  useEffect(() => {
+    const actualizarRubros = () => setRubros(getRubrosRegistrados());
+    window.addEventListener("storage", actualizarRubros);
+    return () => window.removeEventListener("storage", actualizarRubros);
+  }, []);
 
   const handleAdd = () => {
     setEditing(null);
@@ -99,10 +114,10 @@ export default function MateriasPage() {
   };
 
   const columns: ColumnsType<Materia> = [
-    { title: "ID", dataIndex: "id", key: "id" },
-    { title: "Nombre", dataIndex: "nombre", key: "nombre" },
-    { title: "Rubro", dataIndex: "rubro", key: "rubro", render: rubro => rubro || "—" },
-    { title: "Cantidad", dataIndex: "cantidad", key: "cantidad" },
+    { title: "ID", dataIndex: "id", key: "id", sorter: textSorter((materia: Materia) => materia.id) },
+    { title: "Nombre", dataIndex: "nombre", key: "nombre", sorter: textSorter((materia: Materia) => materia.nombre) },
+    { title: "Rubro", dataIndex: "rubro", key: "rubro", sorter: textSorter((materia: Materia) => materia.rubro), render: rubro => rubro || "—" },
+    { title: "Cantidad", dataIndex: "cantidad", key: "cantidad", sorter: numberSorter((materia: Materia) => materia.cantidad) },
     {
       title: "Acciones",
       key: "acciones",
@@ -120,10 +135,16 @@ export default function MateriasPage() {
 
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
         <Button type="primary" onClick={handleAdd}>Nuevo Insumo</Button>
-        {/* opcional: buscador aquí */}
+        <Input.Search
+          placeholder="Buscar por ID, nombre, rubro o cantidad"
+          value={busqueda}
+          onChange={(e) => setBusqueda(e.target.value)}
+          style={{ width: 360 }}
+          allowClear
+        />
       </div>
 
-      <Table columns={columns} dataSource={data} rowKey="id" bordered style={{ width: "100%" }} scroll={{ x: "max-content" }} pagination={{ pageSize: 10 }} />
+      <Table columns={columns} dataSource={materiasFiltradas} rowKey="id" bordered style={{ width: "100%" }} scroll={{ x: "max-content" }} pagination={{ pageSize: 10 }} />
 
       {/* Modal rápido para actualizar cantidad */}
       <Modal
@@ -156,7 +177,12 @@ export default function MateriasPage() {
             <Input />
           </Form.Item>
           <Form.Item label="Rubro" name="rubro" rules={[{ required: true, message: "Ingrese rubro" }]}>
-            <Input />
+            <Select
+              showSearch
+              optionFilterProp="label"
+              placeholder="Seleccione un rubro"
+              options={rubros.map((rubro) => ({ value: rubro, label: rubro }))}
+            />
           </Form.Item>
           <Form.Item label="Cantidad" name="cantidad" rules={[{ required: true, message: "Ingrese cantidad" }]}>
             <InputNumber min={0} style={{ width: "100%" }} />

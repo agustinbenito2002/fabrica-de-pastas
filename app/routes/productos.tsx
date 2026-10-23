@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { Table, Button, Modal, Form, Input, InputNumber, message, Select } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { PageHeader } from "../components/PageHeader";
+import { getRubrosRegistrados } from "../utils/rubros";
+import { numberSorter, textSorter } from "../utils/tableSort";
 
 type Producto = {
   key: string;
@@ -43,9 +45,25 @@ export default function ProductosPage() {
     }));
   });
   const [recetas, setRecetas] = useState<Receta[]>([]);
+  const [rubros, setRubros] = useState(getRubrosRegistrados);
   const [modalVisible, setModalVisible] = useState(false); // para registrar/editar producto completo
   const [editing, setEditing] = useState<Producto | null>(null);
   const [form] = Form.useForm();
+  const [busqueda, setBusqueda] = useState("");
+  const productosFiltrados = data.filter((producto) => {
+    const q = busqueda.trim().toLowerCase();
+    if (!q) return true;
+    const receta = recetas.find(item => String(item.id) === producto.recetaId);
+    return [
+      producto.id,
+      producto.nombre,
+      producto.rubro,
+      producto.recetaId,
+      receta?.nombre ?? "",
+      String(producto.cantidad),
+      String(producto.precio ?? ""),
+    ].some(value => value.toLowerCase().includes(q));
+  });
 
   // modal rápido para actualizar cantidad
   const [confirmVisible, setConfirmVisible] = useState(false);
@@ -65,6 +83,12 @@ export default function ProductosPage() {
     cargarRecetas();
     window.addEventListener("storage", cargarRecetas);
     return () => window.removeEventListener("storage", cargarRecetas);
+  }, []);
+
+  useEffect(() => {
+    const actualizarRubros = () => setRubros(getRubrosRegistrados());
+    window.addEventListener("storage", actualizarRubros);
+    return () => window.removeEventListener("storage", actualizarRubros);
   }, []);
 
   // Aplica ventas nuevas desde localStorage (espera que cada venta tenga .items: [{ id, cantidad }])
@@ -194,24 +218,29 @@ export default function ProductosPage() {
   };
 
   const columns: ColumnsType<Producto> = [
-    { title: "ID", dataIndex: "id", key: "id" },
-    { title: "Nombre", dataIndex: "nombre", key: "nombre" },
-    { title: "Rubro", dataIndex: "rubro", key: "rubro", render: rubro => rubro || "—" },
+    { title: "ID", dataIndex: "id", key: "id", sorter: textSorter((producto: Producto) => producto.id) },
+    { title: "Nombre", dataIndex: "nombre", key: "nombre", sorter: textSorter((producto: Producto) => producto.nombre) },
+    { title: "Rubro", dataIndex: "rubro", key: "rubro", sorter: textSorter((producto: Producto) => producto.rubro), render: rubro => rubro || "—" },
     {
       title: "Receta",
       dataIndex: "recetaId",
       key: "receta",
+      sorter: textSorter((producto: Producto) =>
+        recetas.find(receta => String(receta.id) === producto.recetaId)?.nombre ?? ""
+      ),
       render: recetaId => recetas.find(receta => String(receta.id) === recetaId)?.nombre || "—",
     },
     {
       title: "Cantidad",
       dataIndex: "cantidad",
       key: "cantidad",
+      sorter: numberSorter((producto: Producto) => producto.cantidad),
     },
     {
       title: "Precio",
       dataIndex: "precio",
       key: "precio",
+      sorter: numberSorter((producto: Producto) => producto.precio),
       render: (val: number) => (val || val === 0 ? `${Number(val).toFixed(2)}` : "-"),
     },
     {
@@ -230,10 +259,16 @@ export default function ProductosPage() {
       <PageHeader title="Productos" />
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
         <Button type="primary" onClick={handleAdd}>Nuevo Producto</Button>
-        {/* opcional: buscador */}
+        <Input.Search
+          placeholder="Buscar por ID, nombre, rubro, receta o cantidad"
+          value={busqueda}
+          onChange={(e) => setBusqueda(e.target.value)}
+          style={{ width: 360 }}
+          allowClear
+        />
       </div>
 
-      <Table columns={columns} dataSource={data} rowKey="key" bordered style={{ width: "100%" }} pagination={{ pageSize: 10 }} />
+      <Table columns={columns} dataSource={productosFiltrados} rowKey="key" bordered style={{ width: "100%" }} pagination={{ pageSize: 10 }} />
 
       {/* Modal rápido para actualizar cantidad */}
       <Modal
@@ -265,8 +300,13 @@ export default function ProductosPage() {
           <Form.Item label="Nombre" name="nombre" rules={[{ required: true, message: "Ingrese nombre" }]}>
             <Input />
           </Form.Item>
-          <Form.Item label="Rubro" name="rubro" rules={[{ required: true, message: "Ingrese rubro" }]}>
-            <Input />
+          <Form.Item label="Rubro" name="rubro" rules={[{ required: true, message: "Seleccione un rubro" }]}>
+            <Select
+              showSearch
+              optionFilterProp="label"
+              placeholder="Seleccione un rubro"
+              options={rubros.map((rubro) => ({ value: rubro, label: rubro }))}
+            />
           </Form.Item>
           <Form.Item label="Receta" name="recetaId">
             <Select

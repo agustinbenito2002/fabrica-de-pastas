@@ -11,6 +11,7 @@ import {
 } from "antd";
 import dayjs from "dayjs";
 import { PageHeader } from "../components/PageHeader";
+import { textSorter } from "../utils/tableSort";
 
 const { Option } = Select;
 const LOCAL_STORAGE_KEY = "maquinas-listado";
@@ -64,6 +65,18 @@ export default function MaquinasPage() {
   const [modalVisible, setModalVisible] = useState(false);
   const [editing, setEditing] = useState<MaquinaRecord | null>(null);
   const [form] = Form.useForm();
+  const [busqueda, setBusqueda] = useState("");
+  const maquinasFiltradas = data.filter((maquina) => {
+    const q = busqueda.trim().toLowerCase();
+    return !q || [
+      maquina.id,
+      maquina.tipo,
+      maquina.estado,
+      maquina.fechaMantenimiento,
+      maquina.tipoMantenimiento,
+      maquina.responsable,
+    ].some(value => value.toLowerCase().includes(q));
+  });
 
   // 🧠 Guardar automáticamente en localStorage cuando cambia
   useEffect(() => {
@@ -150,12 +163,13 @@ export default function MaquinasPage() {
   };
 
   const columns = [
-    { title: "ID", dataIndex: "id", key: "id" },
-    { title: "Tipo", dataIndex: "tipo", key: "tipo" },
-    { title: "Estado", dataIndex: "estado", key: "estado" },
+    { title: "ID", dataIndex: "id", key: "id", sorter: textSorter((maquina: MaquinaRecord) => maquina.id) },
+    { title: "Tipo", dataIndex: "tipo", key: "tipo", sorter: textSorter((maquina: MaquinaRecord) => maquina.tipo) },
+    { title: "Estado", dataIndex: "estado", key: "estado", sorter: textSorter((maquina: MaquinaRecord) => maquina.estado) },
     {
       title: "Último Mantenimiento",
       key: "fechaMantenimiento",
+      sorter: textSorter((maquina: MaquinaRecord) => `${maquina.fechaMantenimiento} ${maquina.tipoMantenimiento}`),
       render: (_: any, record: MaquinaRecord) => (
         <span>
           {record.fechaMantenimiento
@@ -164,7 +178,7 @@ export default function MaquinasPage() {
         </span>
       )
     },
-    { title: "Responsable", dataIndex: "responsable", key: "responsable" },
+    { title: "Responsable", dataIndex: "responsable", key: "responsable", sorter: textSorter((maquina: MaquinaRecord) => maquina.responsable) },
     {
       title: "Acciones",
       key: "acciones",
@@ -184,11 +198,20 @@ export default function MaquinasPage() {
   return (
     <div>
       <PageHeader title="Listado de Máquinas" />
-      <Button type="primary" onClick={handleAdd} style={{ marginBottom: 16 }}>
-        Registrar máquina
-      </Button>
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
+        <Button type="primary" onClick={handleAdd}>
+          Registrar máquina
+        </Button>
+        <Input.Search
+          placeholder="Buscar por ID, tipo, estado, mantenimiento o responsable"
+          value={busqueda}
+          onChange={(e) => setBusqueda(e.target.value)}
+          style={{ width: 360 }}
+          allowClear
+        />
+      </div>
 
-      <Table columns={columns} dataSource={data} pagination={false} rowKey="key" bordered />
+      <Table columns={columns} dataSource={maquinasFiltradas} pagination={false} rowKey="key" bordered />
 
       <Modal
         title={editing ? "Editar máquina" : "Registrar máquina"}

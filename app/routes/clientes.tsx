@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Table, Button, Modal, Form, Input, Switch, message } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { PageHeader } from "../components/PageHeader";
+import { numberSorter, textSorter } from "../utils/tableSort";
 
 const LOCAL_STORAGE_KEY = "clientes-listado";
 
@@ -119,12 +120,12 @@ const ClientesPage: React.FC = () => {
   };
 
   const columns: ColumnsType<Cliente> = [
-    { title: "ID", dataIndex: "id", key: "id" },
-    { title: "DNI", dataIndex: "dni", key: "dni" },
-    { title: "Nombre", dataIndex: "nombre", key: "nombre" },
-    { title: "Email", dataIndex: "email", key: "email" },
-    { title: "Teléfono", dataIndex: "telefono", key: "telefono" },
-    { title: "Dirección", dataIndex: "direccion", key: "direccion" },
+    { title: "ID", dataIndex: "id", key: "id", sorter: numberSorter((cliente: Cliente) => cliente.id) },
+    { title: "DNI", dataIndex: "dni", key: "dni", sorter: textSorter((cliente: Cliente) => cliente.dni) },
+    { title: "Nombre", dataIndex: "nombre", key: "nombre", sorter: textSorter((cliente: Cliente) => cliente.nombre) },
+    { title: "Email", dataIndex: "email", key: "email", sorter: textSorter((cliente: Cliente) => cliente.email) },
+    { title: "Teléfono", dataIndex: "telefono", key: "telefono", sorter: textSorter((cliente: Cliente) => cliente.telefono) },
+    { title: "Dirección", dataIndex: "direccion", key: "direccion", sorter: textSorter((cliente: Cliente) => cliente.direccion) },
     {
       title: "Acciones",
       key: "acciones",
@@ -150,7 +151,7 @@ const ClientesPage: React.FC = () => {
 
   return (
     <div style={{ width: "100%" }}>
-      <PageHeader title="Administración de Clientes" />
+      <PageHeader title="Clientes" />
 
       <div
         style={{

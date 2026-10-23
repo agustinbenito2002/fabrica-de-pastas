@@ -26,22 +26,50 @@ export default function Dashboard() {
                     <ComprobantesVentaPage abrirNuevo />
                 </>
             ) : (
-                <>
-                    <Flex vertical gap={8}>
-                        <Typography.Title level={2}>Dashboard</Typography.Title>
-                        <Typography.Paragraph type="secondary">
-                            Bienvenido al sistema de gestión de la fábrica de pastas.
-                        </Typography.Paragraph>
-                    </Flex>
+                <section className="dashboard">
+                    <div className="dashboard-hero">
+                        <div className="dashboard-hero-content">
+                            <Typography.Text className="dashboard-eyebrow">
+                                CENTRO DE CONTROL <span />
+                            </Typography.Text>
+                            <Typography.Title level={1} className="dashboard-title">
+                                Dashboard
+                            </Typography.Title>
+                            <Typography.Paragraph className="dashboard-description">
+                                Gestioná la producción y las ventas de tu fábrica desde un solo lugar.
+                            </Typography.Paragraph>
+                        </div>
+                        <div className="dashboard-orbit dashboard-orbit-one" />
+                        <div className="dashboard-orbit dashboard-orbit-two" />
+                    </div>
+                    <div className="dashboard-section-heading">
+                        <Typography.Title level={4}>Accesos rápidos</Typography.Title>
+                        <Typography.Text type="secondary">Operaciones frecuentes</Typography.Text>
+                    </div>
                     <Space wrap size="middle" className="dashboard-actions">
-                        <Button type="primary" icon={<ShoppingCartOutlined />} onClick={() => setMostrarNuevaOrden(true)}>
-                            Crear Nueva Orden de Pedido
+                        <Button
+                            type="primary"
+                            className="dashboard-action dashboard-action-primary"
+                            icon={<ShoppingCartOutlined />}
+                            onClick={() => setMostrarNuevaOrden(true)}
+                        >
+                            <span>
+                                <span className="dashboard-action-title">Crear nueva orden</span>
+                                <span className="dashboard-action-caption">Registrar un pedido</span>
+                            </span>
                         </Button>
-                        <Button icon={<FileAddOutlined />} onClick={() => setMostrarNuevoComprobante(true)}>
-                            Crear Comprobante de Venta
+                        <Button
+                            className="dashboard-action"
+                            icon={<FileAddOutlined />}
+                            onClick={() => setMostrarNuevoComprobante(true)}
+                        >
+                            <span>
+                                <span className="dashboard-action-title">Nuevo comprobante</span>
+                                <span className="dashboard-action-caption">Cargar una venta</span>
+                            </span>
                         </Button>
                     </Space>
-                </>
+                </section>
             )}
         </SidebarLayout>
     );

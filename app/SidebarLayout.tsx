@@ -10,8 +10,10 @@ import {
   ToolOutlined,
   UserOutlined,
   SettingOutlined,
+  ShoppingCartOutlined,
 } from "@ant-design/icons";
 import ClientesPage from "./routes/clientes";
+import ComprasPage from "./routes/compras";
 import ComprobantesVentaPage from "./routes/comprovantesventa";
 import MateriasPage from "./routes/materias";
 import MaquinasPage from "./routes/maquinas";
@@ -21,6 +23,7 @@ import PresupuestoPage from "./routes/presupuesto";
 import ProductosPage from "./routes/productos";
 import ProveedoresPage from "./routes/proveedores";
 import RecetasPage from "./routes/recetas";  // Add this import
+import RubrosPage from "./routes/rubros";
 
 const { Header, Sider, Content } = Layout;
 
@@ -37,6 +40,7 @@ const menuItems = [
     children: [
       { key: "insumos", label: "Insumos" },
       { key: "productos", label: "Productos" },
+      { key: "rubros", label: "Rubros para Pastas" },
       { key: "recetas", label: "Recetas" },
       { key: "maquinas", icon: <ToolOutlined />, label: "Máquinas" },
       { key: "ordenes-mantenimiento", icon: <FileDoneOutlined />, label: "Órdenes de Mantenimiento" },
@@ -47,11 +51,19 @@ const menuItems = [
     icon: <DollarOutlined />,
     label: "Venta",
     children: [
-      { key: "clientes", icon: <UserOutlined />, label: "Administración de Clientes" },
+      { key: "clientes", icon: <UserOutlined />, label: "Clientes" },
       { key: "comprobantes-venta", icon: <FileTextOutlined />, label: "Comprobantes de Venta" },
-      { key: "proveedores", icon: <UserOutlined />, label: "Administración de Proveedores" },
       { key: "ordenes", icon: <OrderedListOutlined />, label: "Administrar Órdenes" },
-      { key: "presupuesto", icon: <DollarOutlined />, label: "Administrar Presupuesto" },
+    ],
+  },
+  {
+    key: "compras",
+    icon: <ShoppingCartOutlined />,
+    label: "Compras",
+    children: [
+      { key: "compras-listado", icon: <ShoppingOutlined />, label: "Compras" },
+      { key: "proveedores", icon: <UserOutlined />, label: "Proveedores" },
+      { key: "presupuesto", icon: <DollarOutlined />, label: "Presupuestos" },
     ],
   },
   {
@@ -78,6 +90,8 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
     switch (currentPage) {
       case "clientes":
         return <ClientesPage />;
+      case "compras-listado":
+        return <ComprasPage />;
       case "comprobantes-venta":
         return <ComprobantesVentaPage />;
       case "insumos":
@@ -92,6 +106,8 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
         return <PresupuestoPage />;
       case "productos":
         return <ProductosPage />;
+      case "rubros":
+        return <RubrosPage />;
       case "proveedores":
         return <ProveedoresPage />;
       case "recetas":     // Add this case

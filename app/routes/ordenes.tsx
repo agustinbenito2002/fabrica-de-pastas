@@ -15,6 +15,7 @@ import dayjs from "dayjs";
 import { getProductosRegistrados } from "../utils/productos";
 import type { ProductoRegistrado } from "../utils/productos";
 import { PageHeader } from "../components/PageHeader";
+import { numberSorter, textSorter } from "../utils/tableSort";
 
 const { Option } = Select;
 const LOCAL_STORAGE_KEY = "ordenes-listado";
@@ -228,20 +229,24 @@ const OrdenesPage: React.FC<OrdenesPageProps> = ({ abrirNuevaOrden = false }) =>
   };
 
   const columns = [
-    { title: "ID", dataIndex: "id", key: "id" },
-    { title: "Cliente", dataIndex: "cliente", key: "cliente" },
+    { title: "ID", dataIndex: "id", key: "id", sorter: numberSorter((orden: Orden) => orden.id) },
+    { title: "Cliente", dataIndex: "cliente", key: "cliente", sorter: textSorter((orden: Orden) => orden.cliente) },
     {
       title: "Fecha",
       dataIndex: "fecha",
       key: "fecha",
+      sorter: textSorter((orden: Orden) => orden.fecha),
       render: (text: string) => dayjs(text).format("YYYY-MM-DD")
     },
-    { title: "Tipo", dataIndex: "tipo", key: "tipo" },
-    { title: "Estado", dataIndex: "estado", key: "estado" },
+    { title: "Tipo", dataIndex: "tipo", key: "tipo", sorter: textSorter((orden: Orden) => orden.tipo) },
+    { title: "Estado", dataIndex: "estado", key: "estado", sorter: textSorter((orden: Orden) => orden.estado) },
     {
       title: "Productos",
       dataIndex: "productos",
       key: "productos",
+      sorter: textSorter((orden: Orden) =>
+        orden.productos.map(producto => producto.nombre).join(", ")
+      ),
       render: (productos: Producto[]) =>
         Array.isArray(productos)
           ? productos
@@ -258,6 +263,7 @@ const OrdenesPage: React.FC<OrdenesPageProps> = ({ abrirNuevaOrden = false }) =>
       title: "Total",
       dataIndex: "total",
       key: "total",
+      sorter: numberSorter((orden: Orden) => orden.total),
       render: (total: number) => `$${total?.toFixed(2) || 0}`
     },
     {

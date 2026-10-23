@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Table, Button, Modal, Form, Input, message } from "antd";
 import { PageHeader } from "../components/PageHeader";
+import { textSorter } from "../utils/tableSort";
 
 const LOCAL_STORAGE_KEY = "proveedores-listado";
 
@@ -129,12 +130,12 @@ const ProveedoresPage: React.FC = () => {
   });
 
   const columns = [
-    { title: "ID", dataIndex: "id", key: "id" },
-    { title: "Nombre", dataIndex: "nombre", key: "nombre" },
-    { title: "CUIT", dataIndex: "cuit", key: "cuit" },
-    { title: "Teléfono", dataIndex: "telefono", key: "telefono" },
-    { title: "Email", dataIndex: "email", key: "email" },
-    { title: "Dirección", dataIndex: "direccion", key: "direccion" },
+    { title: "ID", dataIndex: "id", key: "id", sorter: textSorter((proveedor: ProveedorRecord) => proveedor.id) },
+    { title: "Nombre", dataIndex: "nombre", key: "nombre", sorter: textSorter((proveedor: ProveedorRecord) => proveedor.nombre) },
+    { title: "CUIT", dataIndex: "cuit", key: "cuit", sorter: textSorter((proveedor: ProveedorRecord) => proveedor.cuit) },
+    { title: "Teléfono", dataIndex: "telefono", key: "telefono", sorter: textSorter((proveedor: ProveedorRecord) => proveedor.telefono) },
+    { title: "Email", dataIndex: "email", key: "email", sorter: textSorter((proveedor: ProveedorRecord) => proveedor.email) },
+    { title: "Dirección", dataIndex: "direccion", key: "direccion", sorter: textSorter((proveedor: ProveedorRecord) => proveedor.direccion) },
     {
       title: "Acciones",
       key: "acciones",

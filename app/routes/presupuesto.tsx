@@ -15,6 +15,7 @@ import dayjs from "dayjs";
 import { getProductosRegistrados } from "../utils/productos";
 import type { ProductoRegistrado } from "../utils/productos";
 import { PageHeader } from "../components/PageHeader";
+import { numberSorter, textSorter } from "../utils/tableSort";
 
 const { Option } = Select;
 const LOCAL_STORAGE_KEY = "presupuestos-listado";
@@ -152,21 +153,23 @@ const PresupuestoPages: React.FC = () => {
   };
 
   const columns = [
-    { title: "ID", dataIndex: "id", key: "id" },
-    { title: "Proveedor", dataIndex: "proveedor", key: "proveedor" },
+    { title: "ID", dataIndex: "id", key: "id", sorter: numberSorter((presupuesto: Presupuesto) => presupuesto.id) },
+    { title: "Proveedor", dataIndex: "proveedor", key: "proveedor", sorter: textSorter((presupuesto: Presupuesto) => presupuesto.proveedor) },
     {
       title: "Fecha",
       dataIndex: "fecha",
       key: "fecha",
+      sorter: textSorter((presupuesto: Presupuesto) => presupuesto.fecha),
       render: (text: string) => dayjs(text).format("YYYY-MM-DD")
     },
-    { title: "Descripción", dataIndex: "descripcion", key: "descripcion" },
-    { title: "Cantidad", dataIndex: "cantidad", key: "cantidad" },
-    { title: "Estado", dataIndex: "estado", key: "estado" },
+    { title: "Descripción", dataIndex: "descripcion", key: "descripcion", sorter: textSorter((presupuesto: Presupuesto) => presupuesto.descripcion) },
+    { title: "Cantidad", dataIndex: "cantidad", key: "cantidad", sorter: numberSorter((presupuesto: Presupuesto) => presupuesto.cantidad) },
+    { title: "Estado", dataIndex: "estado", key: "estado", sorter: textSorter((presupuesto: Presupuesto) => presupuesto.estado) },
     {
       title: "Total",
       dataIndex: "total",
       key: "total",
+      sorter: numberSorter((presupuesto: Presupuesto) => presupuesto.total),
       render: (total: number) => `$${Number(total).toFixed(2)}`
     },
     {

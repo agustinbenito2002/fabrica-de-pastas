@@ -15,6 +15,7 @@ import dayjs from "dayjs";
 import { getMaquinasRegistradas } from "../utils/maquinas";
 import type { MaquinaRegistrada } from "../utils/maquinas";
 import { PageHeader } from "../components/PageHeader";
+import { numberSorter, textSorter } from "../utils/tableSort";
 
 const { Option } = Select;
 const LOCAL_STORAGE_KEY = "ordenes-mantenimiento-listado";
@@ -154,22 +155,24 @@ const OrdenesMantenimientoPage: React.FC = () => {
     };
 
     const columns = [
-        { title: "ID", dataIndex: "id", key: "id" },
-        { title: "Máquina", dataIndex: "maquina", key: "maquina" },
+        { title: "ID", dataIndex: "id", key: "id", sorter: numberSorter((orden: OrdenMantenimiento) => orden.id) },
+        { title: "Máquina", dataIndex: "maquina", key: "maquina", sorter: textSorter((orden: OrdenMantenimiento) => orden.maquina) },
         {
             title: "Fecha",
             dataIndex: "fecha",
             key: "fecha",
+            sorter: textSorter((orden: OrdenMantenimiento) => orden.fecha),
             render: (text: string) => dayjs(text).format("YYYY-MM-DD")
         },
-        { title: "Tipo", dataIndex: "tipoMantenimiento", key: "tipoMantenimiento" },
-        { title: "Estado", dataIndex: "estado", key: "estado" },
-        { title: "Responsable", dataIndex: "responsable", key: "responsable" },
-        { title: "Descripción", dataIndex: "descripcion", key: "descripcion" },
+        { title: "Tipo", dataIndex: "tipoMantenimiento", key: "tipoMantenimiento", sorter: textSorter((orden: OrdenMantenimiento) => orden.tipoMantenimiento) },
+        { title: "Estado", dataIndex: "estado", key: "estado", sorter: textSorter((orden: OrdenMantenimiento) => orden.estado) },
+        { title: "Responsable", dataIndex: "responsable", key: "responsable", sorter: textSorter((orden: OrdenMantenimiento) => orden.responsable) },
+        { title: "Descripción", dataIndex: "descripcion", key: "descripcion", sorter: textSorter((orden: OrdenMantenimiento) => orden.descripcion) },
         {
             title: "Costo",
             dataIndex: "costo",
             key: "costo",
+            sorter: numberSorter((orden: OrdenMantenimiento) => orden.costo),
             render: (costo: number) => `$${costo.toFixed(2)}`
         },
         {
