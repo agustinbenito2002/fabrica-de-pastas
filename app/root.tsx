@@ -8,10 +8,15 @@ import {
 } from "react-router";
 import { App as AntApp, Button, ConfigProvider, Result, theme, Typography } from "antd";
 import esES from "antd/locale/es_ES";
+import { migrateStoredIds } from "./utils/recordIds";
 
 import type { Route } from "./+types/root";
 import "antd/dist/reset.css";
 import "./app.css";
+
+if (typeof window !== "undefined") {
+  migrateStoredIds();
+}
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (

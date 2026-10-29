@@ -5,11 +5,12 @@ import { getProductosRegistrados } from '../utils/productos';
 import type { ProductoRegistrado } from '../utils/productos';
 import { PageHeader } from '../components/PageHeader';
 import { numberSorter, textSorter } from '../utils/tableSort';
+import { getNextId } from '../utils/recordIds';
 
 const { Option } = Select;
 
 interface Ingrediente {
-    id: string;
+    id: number;
     nombre: string;
     cantidad: number;
     unidad: string;
@@ -20,7 +21,7 @@ interface Receta {
     nombre: string;
     ingredientes: Ingrediente[];
     productoFinal: {
-        id: string;
+        id: number;
         nombre: string;
     };
 }
@@ -38,10 +39,10 @@ const RecetasPage: React.FC = () => {
         return [
             String(receta.id),
             receta.nombre,
-            receta.productoFinal?.id ?? '',
+            String(receta.productoFinal?.id ?? ''),
             receta.productoFinal?.nombre ?? '',
             ...receta.ingredientes.flatMap(ingrediente => [
-                ingrediente.id,
+                String(ingrediente.id),
                 ingrediente.nombre,
                 String(ingrediente.cantidad),
                 ingrediente.unidad,
@@ -150,7 +151,7 @@ const RecetasPage: React.FC = () => {
     };
 
     const handleSubmit = (values: any) => {
-        if (editingId) {
+        if (editingId !== null) {
             const newRecetas = recetas.map(receta =>
                 receta.id === editingId ? { ...values, id: editingId } : receta
             );
@@ -159,7 +160,7 @@ const RecetasPage: React.FC = () => {
         } else {
             const newReceta = {
                 ...values,
-                id: recetas.length + 1,
+                id: getNextId(recetas),
             };
             saveRecetas([...recetas, newReceta]);
             message.success('Receta creada exitosamente');
@@ -212,37 +213,31 @@ const RecetasPage: React.FC = () => {
                     </Form.Item>
 
                     <Form.Item label="Producto Final">
-                        <Input.Group compact>
-                            <Form.Item
-                                name={['productoFinal', 'id']}
-                                noStyle
-                                rules={[{ required: true, message: 'Ingrese ID del producto' }]}
+                        <Form.Item name={['productoFinal', 'id']} hidden>
+                            <Input />
+                        </Form.Item>
+                        <Form.Item
+                            name={['productoFinal', 'nombre']}
+                            noStyle
+                            rules={[{ required: true, message: 'Seleccione un producto' }]}
+                        >
+                            <Select
+                                placeholder="Seleccione un producto"
+                                showSearch
+                                optionFilterProp="label"
+                                style={{ width: '100%' }}
+                                onChange={(nombre) => {
+                                    const producto = productos.find((item) => item.nombre === nombre);
+                                    form.setFieldValue(['productoFinal', 'id'], producto?.id);
+                                }}
                             >
-                                <Input placeholder="ID del producto" readOnly style={{ width: '30%' }} />
-                            </Form.Item>
-                            <Form.Item
-                                name={['productoFinal', 'nombre']}
-                                noStyle
-                                rules={[{ required: true, message: 'Ingrese nombre del producto' }]}
-                            >
-                                <Select
-                                    placeholder="Seleccione un producto"
-                                    showSearch
-                                    optionFilterProp="label"
-                                    style={{ width: '70%' }}
-                                    onChange={(nombre) => {
-                                        const producto = productos.find((item) => item.nombre === nombre);
-                                        form.setFieldValue(['productoFinal', 'id'], producto?.id);
-                                    }}
-                                >
-                                    {productos.map((producto) => (
-                                        <Option key={producto.id} value={producto.nombre} label={producto.nombre}>
-                                            {producto.nombre}
-                                        </Option>
-                                    ))}
-                                </Select>
-                            </Form.Item>
-                        </Input.Group>
+                                {productos.map((producto) => (
+                                    <Option key={producto.id} value={producto.nombre} label={producto.nombre}>
+                                        {producto.nombre}
+                                    </Option>
+                                ))}
+                            </Select>
+                        </Form.Item>
                     </Form.Item>
 
                     <Form.List name="ingredientes">
@@ -250,13 +245,6 @@ const RecetasPage: React.FC = () => {
                             <>
                                 {fields.map(({ key, name, ...restField }) => (
                                     <Space key={key} className="product-row" style={{ marginBottom: 8 }} align="baseline">
-                                        <Form.Item
-                                            {...restField}
-                                            name={[name, 'id']}
-                                            rules={[{ required: true, message: 'ID requerido' }]}
-                                        >
-                                            <Input placeholder="ID producto" readOnly />
-                                        </Form.Item>
                                         <Form.Item
                                             {...restField}
                                             name={[name, 'nombre']}
@@ -277,6 +265,13 @@ const RecetasPage: React.FC = () => {
                                                     </Option>
                                                 ))}
                                             </Select>
+                                        </Form.Item>
+                                        <Form.Item
+                                            {...restField}
+                                            name={[name, 'id']}
+                                            hidden
+                                        >
+                                            <Input />
                                         </Form.Item>
                                         <Form.Item
                                             {...restField}

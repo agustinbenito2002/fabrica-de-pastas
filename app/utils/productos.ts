@@ -1,6 +1,6 @@
 export interface ProductoRegistrado {
   key?: string;
-  id: string;
+  id: number;
   nombre: string;
   precio?: number;
 }
@@ -8,8 +8,8 @@ export interface ProductoRegistrado {
 const PRODUCTOS_STORAGE_KEY = "productos-listado";
 
 const productosIniciales: ProductoRegistrado[] = [
-  { id: "P-001", nombre: "Fideo Tallarín", precio: 120 },
-  { id: "P-002", nombre: "Ravioles", precio: 250 }
+  { id: 1, nombre: "Fideo Tallarín", precio: 120 },
+  { id: 2, nombre: "Ravioles", precio: 250 }
 ];
 
 export function getProductosRegistrados(): ProductoRegistrado[] {

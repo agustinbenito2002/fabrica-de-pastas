@@ -16,6 +16,7 @@ import { getMaquinasRegistradas } from "../utils/maquinas";
 import type { MaquinaRegistrada } from "../utils/maquinas";
 import { PageHeader } from "../components/PageHeader";
 import { numberSorter, textSorter } from "../utils/tableSort";
+import { getNextId } from "../utils/recordIds";
 
 const { Option } = Select;
 const LOCAL_STORAGE_KEY = "ordenes-mantenimiento-listado";
@@ -23,7 +24,7 @@ const LOCAL_STORAGE_KEY = "ordenes-mantenimiento-listado";
 interface OrdenMantenimiento {
     id: number;
     maquina: string;
-    maquinaId?: string;
+    maquinaId?: number;
     fecha: string;
     tipoMantenimiento: 'Preventivo' | 'Correctivo' | 'Lubricación';
     estado: 'Pendiente' | 'En Proceso' | 'Completada' | 'Cancelada';
@@ -35,7 +36,8 @@ interface OrdenMantenimiento {
 const initialData: OrdenMantenimiento[] = [
     {
         id: 1,
-        maquina: "M-001 (Amasadora)",
+        maquina: "Amasadora",
+        maquinaId: 1,
         fecha: "2025-10-30",
         tipoMantenimiento: "Preventivo",
         estado: "Completada",
@@ -45,7 +47,8 @@ const initialData: OrdenMantenimiento[] = [
     },
     {
         id: 2,
-        maquina: "M-002 (Cortadora)",
+        maquina: "Cortadora",
+        maquinaId: 2,
         fecha: "2025-11-05",
         tipoMantenimiento: "Correctivo",
         estado: "En Proceso",
@@ -126,7 +129,7 @@ const OrdenesMantenimientoPage: React.FC = () => {
             } else {
                 const nueva: OrdenMantenimiento = {
                     ...values,
-                    id: ordenes.length + 1,
+                    id: getNextId(ordenes),
                     fecha: nuevaFecha
                 };
                 setOrdenes([...ordenes, nueva]);
@@ -244,8 +247,8 @@ const OrdenesMantenimientoPage: React.FC = () => {
                         </Select>
                     </Form.Item>
 
-                    <Form.Item name="maquinaId" label="ID de máquina">
-                        <Input placeholder="ID" readOnly />
+                    <Form.Item name="maquinaId" hidden>
+                        <Input />
                     </Form.Item>
 
                     <Form.Item

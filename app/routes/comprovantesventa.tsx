@@ -4,6 +4,7 @@ import { getProductosRegistrados } from "../utils/productos";
 import type { ProductoRegistrado } from "../utils/productos";
 import { PageHeader } from "../components/PageHeader";
 import { numberSorter, textSorter } from "../utils/tableSort";
+import { getNextId } from "../utils/recordIds";
 
 const LOCAL_STORAGE_KEY = "comprobantes-listado";
 const CLIENTES_STORAGE_KEY = "clientes-listado";
@@ -52,7 +53,7 @@ function calcularTotal(productos: { cantidad: number; precio: number }[]) {
   return productos.reduce((acc, p) => acc + p.cantidad * p.precio, 0);
 }
 
-type Producto = { id?: string; nombre: string; cantidad: number; precio: number };
+type Producto = { id?: number; nombre: string; cantidad: number; precio: number };
 type Comprobante = {
   id: number;
   fecha: string;
@@ -148,7 +149,7 @@ const ComprobantesVentaPage: React.FC<ComprobantesVentaPageProps> = ({ abrirNuev
       message.success("Comprobante actualizado correctamente");
     } else {
       const newComprobante: Comprobante = {
-        id: comprobantes.length ? comprobantes[comprobantes.length - 1].id + 1 : 1,
+        id: getNextId(comprobantes),
         ...values,
       };
       setComprobantes([...comprobantes, newComprobante]);
@@ -310,8 +311,8 @@ const ComprobantesVentaPage: React.FC<ComprobantesVentaPageProps> = ({ abrirNuev
                         ))}
                       </Select>
                     </Form.Item>
-                    <Form.Item {...restField} name={[name, "id"]} label="ID">
-                      <Input placeholder="ID" readOnly />
+                    <Form.Item {...restField} name={[name, "id"]} hidden>
+                      <Input />
                     </Form.Item>
                     <Form.Item
                       {...restField}

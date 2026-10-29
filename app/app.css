@@ -73,12 +73,49 @@ body {
 .dashboard-actions { margin-top: 0; }
 .ant-table-wrapper { max-width: 100%; }
 
+.ant-modal .ant-form-vertical {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 20px;
+}
+
+.ant-modal .ant-form-vertical > .ant-form-item {
+  min-width: 0;
+  margin-bottom: 18px;
+}
+
+.ant-modal .ant-form-vertical > .ant-form-item:only-child,
+.ant-modal .ant-form-vertical > .ant-form-item:last-child,
+.ant-modal .ant-form-vertical > .ant-form-item:has(.ant-input-textarea),
+.ant-modal .ant-form-vertical > .ant-form-item:has(.ant-btn-dashed),
+.ant-modal .ant-form-vertical > .product-row,
+.ant-modal .ant-form-vertical > .modal-form-section,
+.ant-modal .ant-form-vertical > .ant-btn-dashed,
+.ant-modal .ant-form-vertical > label {
+  grid-column: 1 / -1;
+}
+
+.ant-modal .ant-form-vertical > .modal-form-section {
+  min-width: 0;
+  margin-bottom: 18px;
+}
+
+.ant-modal .ant-form-vertical .ant-picker,
+.ant-modal .ant-form-vertical .ant-input-number,
+.ant-modal .ant-form-vertical .ant-select {
+  width: 100%;
+}
+
 .ant-table-wrapper .ant-table-container {
   overflow: hidden;
-  border: 1px solid #263746;
+  border: 1px solid #2b3d4b;
   border-radius: 12px;
-  background: #101923;
-  box-shadow: 0 12px 30px rgb(0 0 0 / 18%);
+  background: linear-gradient(145deg, #172533, #121e29);
+  box-shadow: 0 8px 22px rgb(0 0 0 / 14%);
+}
+
+.ant-table-wrapper .ant-table {
+  background: transparent;
 }
 
 .ant-table-wrapper .ant-table-thead > tr > th,
@@ -95,7 +132,7 @@ body {
   letter-spacing: 0.075em;
   text-transform: uppercase;
   white-space: nowrap;
-  background: linear-gradient(180deg, #172533, #14212d);
+  background: linear-gradient(145deg, #172533, #121e29);
   border-bottom: 1px solid #2b3c4b !important;
 }
 
@@ -116,7 +153,7 @@ body {
 
 .ant-table-wrapper .ant-table-tbody > tr.ant-table-row:hover > td {
   color: #f0f8fc;
-  background: #142735 !important;
+  background: rgb(67 217 194 / 8%) !important;
 }
 
 .ant-table-wrapper .ant-table-tbody > tr:last-child > td {
@@ -267,7 +304,7 @@ body {
 
 .product-row {
   display: grid !important;
-  grid-template-columns: minmax(0, 1.8fr) 72px 88px 125px 32px;
+  grid-template-columns: minmax(0, 1.8fr) 88px 125px 32px;
   gap: 8px;
   align-items: start;
   width: 100%;
@@ -280,7 +317,7 @@ body {
 }
 
 .product-row-with-total {
-  grid-template-columns: minmax(0, 1.8fr) 72px 88px 125px 100px 32px;
+  grid-template-columns: minmax(0, 1.8fr) 88px 125px 100px 32px;
 }
 
 .product-row .ant-form-item-label > label {
@@ -311,19 +348,19 @@ body {
 }
 
 .product-row > .ant-space-item:nth-child(2) {
-  grid-column: 2;
+  display: none;
 }
 
 .product-row > .ant-space-item:nth-child(3) {
-  grid-column: 3;
+  grid-column: 2;
 }
 
 .product-row > .ant-space-item:nth-child(4) {
-  grid-column: 4;
+  grid-column: 3;
 }
 
 .product-row-with-total > .ant-space-item:nth-child(5) {
-  grid-column: 5;
+  grid-column: 4;
 }
 
 .product-row > .ant-space-item:last-child {
@@ -356,5 +393,32 @@ body {
   .product-row > .ant-space-item:nth-child(5),
   .product-row > .ant-space-item:last-child {
     grid-column: span 1;
+  }
+}
+
+@media (max-width: 560px) {
+  .ant-modal .ant-form-vertical {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ant-modal .ant-form-vertical > .ant-form-item,
+  .ant-modal .ant-form-vertical > .ant-form-item:only-child,
+  .ant-modal .ant-form-vertical > .ant-form-item:last-child,
+  .ant-modal .ant-form-vertical > .ant-form-item:has(.ant-input-textarea),
+  .ant-modal .ant-form-vertical > .ant-form-item:has(.ant-btn-dashed),
+  .ant-modal .ant-form-vertical > .product-row,
+  .ant-modal .ant-form-vertical > .modal-form-section,
+  .ant-modal .ant-form-vertical > .ant-btn-dashed,
+  .ant-modal .ant-form-vertical > label {
+    grid-column: 1;
+  }
+
+  .ant-modal .product-row,
+  .ant-modal .product-row-with-total {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ant-modal .product-row > .ant-space-item:nth-child(n) {
+    grid-column: auto;
   }
 }

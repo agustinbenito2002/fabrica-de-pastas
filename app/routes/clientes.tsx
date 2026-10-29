@@ -3,6 +3,7 @@ import { Table, Button, Modal, Form, Input, Switch, message } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { PageHeader } from "../components/PageHeader";
 import { numberSorter, textSorter } from "../utils/tableSort";
+import { getNextId } from "../utils/recordIds";
 
 const LOCAL_STORAGE_KEY = "clientes-listado";
 
@@ -78,7 +79,7 @@ const ClientesPage: React.FC = () => {
   });
 
   const handleSubmit = (values: any) => {
-    if (editingId) {
+    if (editingId !== null) {
       // Editar cliente existente
       const updatedClientes = clientes.map((cliente) =>
         cliente.id === editingId ? { ...values, id: editingId } : cliente
@@ -90,7 +91,7 @@ const ClientesPage: React.FC = () => {
       // Crear nuevo cliente
       const newCliente = {
         ...values,
-        id: clientes.length + 1,
+        id: getNextId(clientes),
         estadoDeuda: values.estadoDeuda || false,
         deuda: values.deuda || 0,
       };

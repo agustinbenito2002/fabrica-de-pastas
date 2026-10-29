@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { Table, Button, Modal, Form, Input, message } from "antd";
 import { PageHeader } from "../components/PageHeader";
-import { textSorter } from "../utils/tableSort";
+import { numberSorter, textSorter } from "../utils/tableSort";
+import { getNextId } from "../utils/recordIds";
 
 const LOCAL_STORAGE_KEY = "proveedores-listado";
 
 type ProveedorRecord = {
   key: string;
-  id: string;
+  id: number;
   nombre: string;
   telefono: string;
   email: string;
@@ -18,7 +19,7 @@ type ProveedorRecord = {
 const initialData: ProveedorRecord[] = [
   {
     key: "1",
-    id: "P-001",
+    id: 1,
     nombre: "Harinas del Sur S.A.",
     telefono: "1122334455",
     email: "contacto@harinassur.com",
@@ -27,7 +28,7 @@ const initialData: ProveedorRecord[] = [
   },
   {
     key: "2",
-    id: "P-002",
+    id: 2,
     nombre: "Pastas Industriales SRL",
     telefono: "1145678901",
     email: "ventas@pastasind.com",
@@ -79,15 +80,10 @@ const ProveedoresPage: React.FC = () => {
         );
         message.success("Proveedor modificado correctamente");
       } else {
-        // Nuevo proveedor
-        if (data.some(item => item.id === values.id)) {
-          message.error("El ID ya existe. Ingrese uno diferente.");
-          return;
-        }
-
         const newProveedor: ProveedorRecord = {
           key: Date.now().toString(),
-          ...values
+          ...values,
+          id: getNextId(data),
         };
 
         setData(prev => [...prev, newProveedor]);
@@ -130,7 +126,7 @@ const ProveedoresPage: React.FC = () => {
   });
 
   const columns = [
-    { title: "ID", dataIndex: "id", key: "id", sorter: textSorter((proveedor: ProveedorRecord) => proveedor.id) },
+    { title: "ID", dataIndex: "id", key: "id", sorter: numberSorter((proveedor: ProveedorRecord) => proveedor.id) },
     { title: "Nombre", dataIndex: "nombre", key: "nombre", sorter: textSorter((proveedor: ProveedorRecord) => proveedor.nombre) },
     { title: "CUIT", dataIndex: "cuit", key: "cuit", sorter: textSorter((proveedor: ProveedorRecord) => proveedor.cuit) },
     { title: "Teléfono", dataIndex: "telefono", key: "telefono", sorter: textSorter((proveedor: ProveedorRecord) => proveedor.telefono) },
@@ -157,7 +153,7 @@ const ProveedoresPage: React.FC = () => {
       <PageHeader title="Proveedores" />
 
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
-        <Button type="primary" onClick={() => { setEditing(null); form.resetFields(); setModalVisible(true); }}>
+        <Button type="primary" onClick={handleAdd}>
           Nuevo Proveedor
         </Button>
 
@@ -193,14 +189,6 @@ const ProveedoresPage: React.FC = () => {
         okText="Guardar"
       >
         <Form form={form} layout="vertical">
-          <Form.Item
-            label="ID"
-            name="id"
-            rules={[{ required: true, message: "Ingrese el ID" }]}
-          >
-            <Input disabled={!!editing} />
-          </Form.Item>
-
           <Form.Item
             label="Nombre"
             name="nombre"

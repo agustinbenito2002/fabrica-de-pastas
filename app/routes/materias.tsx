@@ -4,10 +4,11 @@ import type { ColumnsType } from "antd/es/table";
 import { PageHeader } from "../components/PageHeader";
 import { getRubrosRegistrados } from "../utils/rubros";
 import { numberSorter, textSorter } from "../utils/tableSort";
+import { getNextId } from "../utils/recordIds";
 
 type Materia = {
   key: string;
-  id: string;
+  id: number;
   nombre: string;
   rubro: string;
   cantidad: number;
@@ -18,9 +19,9 @@ type MateriaGuardada = Omit<Materia, "rubro"> & Partial<Pick<Materia, "rubro">>;
 const LOCAL_STORAGE_KEY = "materias-listado";
 
 const initialData: Materia[] = [
-  { key: "1", id: "MP-001", nombre: "Harina", rubro: "Secos", cantidad: 1000 },
-  { key: "2", id: "MP-002", nombre: "Huevos", rubro: "Refrigerados", cantidad: 200 },
-  { key: "3", id: "MP-003", nombre: "Sal", rubro: "Condimentos", cantidad: 50 },
+  { key: "1", id: 1, nombre: "Harina", rubro: "Secos", cantidad: 1000 },
+  { key: "2", id: 2, nombre: "Huevos", rubro: "Refrigerados", cantidad: 200 },
+  { key: "3", id: 3, nombre: "Sal", rubro: "Condimentos", cantidad: 50 },
 ];
 
 export default function MateriasPage() {
@@ -38,7 +39,7 @@ export default function MateriasPage() {
   const [busqueda, setBusqueda] = useState("");
   const materiasFiltradas = data.filter((materia) => {
     const q = busqueda.trim().toLowerCase();
-    return !q || [materia.id, materia.nombre, materia.rubro, String(materia.cantidad)]
+    return !q || [String(materia.id), materia.nombre, materia.rubro, String(materia.cantidad)]
       .some(value => value.toLowerCase().includes(q));
   });
 
@@ -97,11 +98,7 @@ export default function MateriasPage() {
         setData(prev => prev.map(m => (m.key === editing.key ? { ...m, nombre: values.nombre, rubro: values.rubro, cantidad: Number(values.cantidad) } : m)));
         message.success("Insumo modificado");
       } else {
-        if (data.some(d => d.id === values.id)) {
-          message.error("El ID ya existe");
-          return;
-        }
-        const nueva: Materia = { key: Date.now().toString(), id: values.id, nombre: values.nombre, rubro: values.rubro, cantidad: Number(values.cantidad) };
+        const nueva: Materia = { key: Date.now().toString(), id: getNextId(data), nombre: values.nombre, rubro: values.rubro, cantidad: Number(values.cantidad) };
         setData(prev => [...prev, nueva]);
         message.success("Insumo registrado");
       }
@@ -114,7 +111,7 @@ export default function MateriasPage() {
   };
 
   const columns: ColumnsType<Materia> = [
-    { title: "ID", dataIndex: "id", key: "id", sorter: textSorter((materia: Materia) => materia.id) },
+    { title: "ID", dataIndex: "id", key: "id", sorter: numberSorter((materia: Materia) => materia.id) },
     { title: "Nombre", dataIndex: "nombre", key: "nombre", sorter: textSorter((materia: Materia) => materia.nombre) },
     { title: "Rubro", dataIndex: "rubro", key: "rubro", sorter: textSorter((materia: Materia) => materia.rubro), render: rubro => rubro || "—" },
     { title: "Cantidad", dataIndex: "cantidad", key: "cantidad", sorter: numberSorter((materia: Materia) => materia.cantidad) },
@@ -170,9 +167,6 @@ export default function MateriasPage() {
         okText="Guardar"
       >
         <Form form={form} layout="vertical">
-          <Form.Item label="ID" name="id" rules={[{ required: true, message: "Ingrese ID" }]}>
-            <Input disabled={!!editing} />
-          </Form.Item>
           <Form.Item label="Nombre" name="nombre" rules={[{ required: true, message: "Ingrese nombre" }]}>
             <Input />
           </Form.Item>

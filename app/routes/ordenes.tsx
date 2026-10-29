@@ -16,6 +16,7 @@ import { getProductosRegistrados } from "../utils/productos";
 import type { ProductoRegistrado } from "../utils/productos";
 import { PageHeader } from "../components/PageHeader";
 import { numberSorter, textSorter } from "../utils/tableSort";
+import { getNextId } from "../utils/recordIds";
 
 const { Option } = Select;
 const LOCAL_STORAGE_KEY = "ordenes-listado";
@@ -40,7 +41,7 @@ function getClientesRegistrados(): ClienteRegistrado[] {
 }
 
 interface Producto {
-  id?: string;
+  id?: number;
   nombre: string;
   cantidad: number;
   precio: number;
@@ -198,7 +199,7 @@ const OrdenesPage: React.FC<OrdenesPageProps> = ({ abrirNuevaOrden = false }) =>
       } else {
         const nueva: Orden = {
           ...values,
-          id: ordenes.length + 1,
+          id: getNextId(ordenes),
           fecha: nuevaFecha,
           productos,
           total
@@ -366,7 +367,7 @@ const OrdenesPage: React.FC<OrdenesPageProps> = ({ abrirNuevaOrden = false }) =>
           {/* 🧩 Productos dinámicos */}
           <Form.List name="productos">
             {(fields, { add, remove }) => (
-              <div>
+              <div className="modal-form-section">
                 {fields.map(({ key, name, ...restField }) => (
                   <Space
                     key={key}
@@ -400,8 +401,8 @@ const OrdenesPage: React.FC<OrdenesPageProps> = ({ abrirNuevaOrden = false }) =>
                       </Select>
                     </Form.Item>
 
-                    <Form.Item name={[name, "id"]} label="ID">
-                      <Input placeholder="ID" readOnly />
+                    <Form.Item name={[name, "id"]} hidden>
+                      <Input />
                     </Form.Item>
 
                     <Form.Item

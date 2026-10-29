@@ -1,15 +1,15 @@
 export interface MaquinaRegistrada {
   key?: string;
-  id: string;
+  id: number;
   tipo: string;
 }
 
 const MAQUINAS_STORAGE_KEY = "maquinas-listado";
 
 const maquinasIniciales: MaquinaRegistrada[] = [
-  { id: "M-001", tipo: "Amasadora" },
-  { id: "M-002", tipo: "Cortadora" },
-  { id: "M-003", tipo: "Empaquetadora" }
+  { id: 1, tipo: "Amasadora" },
+  { id: 2, tipo: "Cortadora" },
+  { id: 3, tipo: "Empaquetadora" }
 ];
 
 export function getMaquinasRegistradas(): MaquinaRegistrada[] {

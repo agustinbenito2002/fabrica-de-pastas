@@ -12,13 +12,14 @@ import {
 import dayjs from "dayjs";
 import { PageHeader } from "../components/PageHeader";
 import { textSorter } from "../utils/tableSort";
+import { getNextId } from "../utils/recordIds";
 
 const { Option } = Select;
 const LOCAL_STORAGE_KEY = "maquinas-listado";
 
 type MaquinaRecord = {
   key: string;
-  id: string;
+  id: number;
   tipo: string;
   estado: string;
   fechaMantenimiento: string;
@@ -29,7 +30,7 @@ type MaquinaRecord = {
 const initialData: MaquinaRecord[] = [
   {
     key: "1",
-    id: "M-001",
+    id: 1,
     tipo: "Amasadora",
     estado: "Operativa",
     fechaMantenimiento: "2025-09-15",
@@ -38,7 +39,7 @@ const initialData: MaquinaRecord[] = [
   },
   {
     key: "2",
-    id: "M-002",
+    id: 2,
     tipo: "Cortadora",
     estado: "En reparación",
     fechaMantenimiento: "2025-08-30",
@@ -47,7 +48,7 @@ const initialData: MaquinaRecord[] = [
   },
   {
     key: "3",
-    id: "M-003",
+    id: 3,
     tipo: "Empaquetadora",
     estado: "Operativa",
     fechaMantenimiento: "2025-09-10",
@@ -69,7 +70,7 @@ export default function MaquinasPage() {
   const maquinasFiltradas = data.filter((maquina) => {
     const q = busqueda.trim().toLowerCase();
     return !q || [
-      maquina.id,
+      String(maquina.id),
       maquina.tipo,
       maquina.estado,
       maquina.fechaMantenimiento,
@@ -114,21 +115,15 @@ export default function MaquinasPage() {
         // ✅ Editar
         const actualizada = data.map(item =>
           item.key === editing.key
-            ? { ...values, key: editing.key, fechaMantenimiento: nuevaFecha }
+            ? { ...values, key: editing.key, id: editing.id, fechaMantenimiento: nuevaFecha }
             : item
         );
         setData(actualizada);
         message.success("Máquina modificada correctamente");
       } else {
-        // ✅ Agregar
-        if (data.some(item => item.id === values.id)) {
-          message.error("El ID ya existe. Ingrese uno diferente.");
-          return;
-        }
-
         const nueva: MaquinaRecord = {
           key: Date.now().toString(),
-          id: values.id,
+          id: getNextId(data),
           tipo: values.tipo,
           estado: values.estado,
           fechaMantenimiento: nuevaFecha,
@@ -163,7 +158,7 @@ export default function MaquinasPage() {
   };
 
   const columns = [
-    { title: "ID", dataIndex: "id", key: "id", sorter: textSorter((maquina: MaquinaRecord) => maquina.id) },
+    { title: "ID", dataIndex: "id", key: "id", sorter: (a: MaquinaRecord, b: MaquinaRecord) => a.id - b.id },
     { title: "Tipo", dataIndex: "tipo", key: "tipo", sorter: textSorter((maquina: MaquinaRecord) => maquina.tipo) },
     { title: "Estado", dataIndex: "estado", key: "estado", sorter: textSorter((maquina: MaquinaRecord) => maquina.estado) },
     {
@@ -226,14 +221,6 @@ export default function MaquinasPage() {
         cancelText="Cancelar"
       >
         <Form form={form} layout="vertical">
-          <Form.Item
-            label="ID"
-            name="id"
-            rules={[{ required: true, message: "Ingrese el ID" }]}
-          >
-            <Input disabled={!!editing} />
-          </Form.Item>
-
           <Form.Item
             label="Tipo"
             name="tipo"

@@ -16,12 +16,13 @@ import { getProductosRegistrados } from "../utils/productos";
 import type { ProductoRegistrado } from "../utils/productos";
 import { PageHeader } from "../components/PageHeader";
 import { numberSorter, textSorter } from "../utils/tableSort";
+import { getNextId } from "../utils/recordIds";
 
 const { Option } = Select;
 const LOCAL_STORAGE_KEY = "presupuestos-listado";
 
 interface PresupuestoItem {
-  id?: string;
+  id?: number;
   descripcion: string;
   cantidad: number;
   precio: number;
@@ -122,7 +123,7 @@ const PresupuestoPages: React.FC = () => {
       } else {
         const nuevo: Presupuesto = {
           ...values,
-          id: Date.now(),
+          id: getNextId(presupuestos),
           fecha: nuevaFecha,
           total,
           cantidad
@@ -298,8 +299,8 @@ const PresupuestoPages: React.FC = () => {
                         ))}
                       </Select>
                     </Form.Item>
-                    <Form.Item {...restField} name={[name, "id"]} label="ID">
-                      <Input placeholder="ID" readOnly />
+                    <Form.Item {...restField} name={[name, "id"]} hidden>
+                      <Input />
                     </Form.Item>
                     <Form.Item
                       {...restField}

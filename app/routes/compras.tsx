@@ -17,12 +17,13 @@ import { getProductosRegistrados } from "../utils/productos";
 import type { ProductoRegistrado } from "../utils/productos";
 import { PageHeader } from "../components/PageHeader";
 import { numberSorter, textSorter } from "../utils/tableSort";
+import { getNextId } from "../utils/recordIds";
 
 const { Option } = Select;
 const LOCAL_STORAGE_KEY = "compras-listado";
 
 interface Producto {
-  id?: string;
+  id?: number;
   nombre: string;
   cantidad: number;
   precio: number;
@@ -141,7 +142,7 @@ const ComprasPage: React.FC = () => {
       } else {
         const nueva: Compra = {
           ...values,
-          id: compras.length + 1,
+          id: getNextId(compras),
           fecha: nuevaFecha,
           productos,
           total
@@ -302,7 +303,7 @@ const ComprasPage: React.FC = () => {
           {/* 🧩 Productos dinámicos */}
           <Form.List name="productos">
             {(fields, { add, remove }) => (
-              <div>
+              <div className="modal-form-section">
                 <Typography.Title level={5}>Productos Comprados</Typography.Title>
                 {fields.map(({ key, name, ...restField }) => (
                   <Space
@@ -336,8 +337,8 @@ const ComprasPage: React.FC = () => {
                       </Select>
                     </Form.Item>
 
-                    <Form.Item {...restField} name={[name, "id"]} label="ID">
-                      <Input placeholder="ID" readOnly />
+                    <Form.Item {...restField} name={[name, "id"]} hidden>
+                      <Input />
                     </Form.Item>
 
                     <Form.Item

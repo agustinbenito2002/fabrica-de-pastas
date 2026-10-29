@@ -4,10 +4,11 @@ import type { ColumnsType } from "antd/es/table";
 import { PageHeader } from "../components/PageHeader";
 import { getRubrosRegistrados } from "../utils/rubros";
 import { numberSorter, textSorter } from "../utils/tableSort";
+import { getNextId } from "../utils/recordIds";
 
 type Producto = {
   key: string;
-  id: string;
+  id: number;
   nombre: string;
   rubro: string;
   recetaId: string;
@@ -26,8 +27,8 @@ const VENTAS_APLICADAS_KEY = "ventas-aplicadas-count";
 const RECETAS_KEY = "recetas-listado";
 
 const initialData: Producto[] = [
-  { key: "1", id: "P-001", nombre: "Fideo Tallarín", rubro: "", recetaId: "", cantidad: 500, precio: 120 },
-  { key: "2", id: "P-002", nombre: "Ravioles", rubro: "", recetaId: "", cantidad: 300, precio: 250 },
+  { key: "1", id: 1, nombre: "Fideo Tallarín", rubro: "", recetaId: "", cantidad: 500, precio: 120 },
+  { key: "2", id: 2, nombre: "Ravioles", rubro: "", recetaId: "", cantidad: 300, precio: 250 },
 ];
 
 type ProductoGuardado = Omit<Producto, "rubro" | "recetaId"> & Partial<Pick<Producto, "rubro" | "recetaId">>;
@@ -55,7 +56,7 @@ export default function ProductosPage() {
     if (!q) return true;
     const receta = recetas.find(item => String(item.id) === producto.recetaId);
     return [
-      producto.id,
+      String(producto.id),
       producto.nombre,
       producto.rubro,
       producto.recetaId,
@@ -193,13 +194,9 @@ export default function ProductosPage() {
         );
         message.success("Producto modificado");
       } else {
-        if (data.some(d => d.id === values.id)) {
-          message.error("El ID ya existe");
-          return;
-        }
         const nuevo: Producto = {
           key: Date.now().toString(),
-          id: values.id,
+          id: getNextId(data),
           nombre: values.nombre,
           rubro: values.rubro,
           recetaId: values.recetaId ?? "",
@@ -218,7 +215,7 @@ export default function ProductosPage() {
   };
 
   const columns: ColumnsType<Producto> = [
-    { title: "ID", dataIndex: "id", key: "id", sorter: textSorter((producto: Producto) => producto.id) },
+    { title: "ID", dataIndex: "id", key: "id", sorter: numberSorter((producto: Producto) => producto.id) },
     { title: "Nombre", dataIndex: "nombre", key: "nombre", sorter: textSorter((producto: Producto) => producto.nombre) },
     { title: "Rubro", dataIndex: "rubro", key: "rubro", sorter: textSorter((producto: Producto) => producto.rubro), render: rubro => rubro || "—" },
     {
@@ -294,9 +291,6 @@ export default function ProductosPage() {
         okText="Guardar"
       >
         <Form form={form} layout="vertical">
-          <Form.Item label="ID" name="id" rules={[{ required: true, message: "Ingrese ID" }]}>
-            <Input disabled={!!editing} />
-          </Form.Item>
           <Form.Item label="Nombre" name="nombre" rules={[{ required: true, message: "Ingrese nombre" }]}>
             <Input />
           </Form.Item>
