@@ -8,6 +8,7 @@ import {
   saveRubrosRegistrados,
 } from "../utils/rubros";
 import { textSorter } from "../utils/tableSort";
+import { showRecordDetails } from "../utils/recordDetails";
 
 interface Rubro {
   nombre: string;
@@ -68,9 +69,14 @@ export default function RubrosPage() {
       title: "Acciones",
       key: "acciones",
       render: (_: unknown, record: Rubro) => (
-        <Button type="link" danger onClick={() => eliminarRubro(record.nombre)}>
-          Eliminar
-        </Button>
+        <>
+          <Button type="link" onClick={() => showRecordDetails("Detalle del rubro", record)}>
+            Ver
+          </Button>
+          <Button type="link" danger onClick={() => eliminarRubro(record.nombre)}>
+            Eliminar
+          </Button>
+        </>
       ),
     },
   ];

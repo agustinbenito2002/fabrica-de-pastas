@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { Table, Button, Modal, Form, Input, Switch, message } from "antd";
+import { Table, Button, Modal, Form, Input, Switch, message, Select } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { PageHeader } from "../components/PageHeader";
 import { numberSorter, textSorter } from "../utils/tableSort";
 import { getNextId } from "../utils/recordIds";
+import { showRecordDetails } from "../utils/recordDetails";
 
 const LOCAL_STORAGE_KEY = "clientes-listado";
 
@@ -53,6 +54,12 @@ type Cliente = {
   email: string;
   telefono: string;
   direccion: string;
+  ciudad?: string;
+  provincia?: string;
+  tipoCliente?: "Particular" | "Comercio" | "Restaurante" | "Distribuidor";
+  nombreComercio?: string;
+  segmentoComercial?: "Minorista" | "Mayorista" | "Gastronómica";
+  condicionPago?: "Efectivo" | "Transferencia" | "Cuenta corriente";
   estadoDeuda: boolean;
   deuda: number;
   dni: string;
@@ -64,6 +71,8 @@ const ClientesPage: React.FC = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [form] = Form.useForm();
   const [editingId, setEditingId] = useState<number | null>(null);
+  const tipoCliente = Form.useWatch("tipoCliente", form);
+  const esClienteComercial = tipoCliente && tipoCliente !== "Particular";
 
   // <-- ADICIÓN: buscador -->
   const [busqueda, setBusqueda] = useState("");
@@ -74,7 +83,12 @@ const ClientesPage: React.FC = () => {
       String(c.id).toLowerCase().includes(q) ||
       (c.dni && c.dni.toLowerCase().includes(q)) ||
       (c.nombre && c.nombre.toLowerCase().includes(q)) ||
-      (c.email && c.email.toLowerCase().includes(q))
+      (c.email && c.email.toLowerCase().includes(q)) ||
+      (c.ciudad && c.ciudad.toLowerCase().includes(q)) ||
+      (c.provincia && c.provincia.toLowerCase().includes(q)) ||
+      (c.nombreComercio && c.nombreComercio.toLowerCase().includes(q)) ||
+      (c.segmentoComercial && c.segmentoComercial.toLowerCase().includes(q)) ||
+      (c.condicionPago && c.condicionPago.toLowerCase().includes(q))
     );
   });
 
@@ -122,16 +136,26 @@ const ClientesPage: React.FC = () => {
 
   const columns: ColumnsType<Cliente> = [
     { title: "ID", dataIndex: "id", key: "id", sorter: numberSorter((cliente: Cliente) => cliente.id) },
+    { title: "Tipo de cliente", dataIndex: "tipoCliente", key: "tipoCliente", sorter: textSorter((cliente: Cliente) => cliente.tipoCliente ?? ""), render: (tipo?: string) => tipo || "—" },
+    { title: "Cliente / contacto", dataIndex: "nombre", key: "nombre", sorter: textSorter((cliente: Cliente) => cliente.nombre) },
+    { title: "Nombre del comercio", dataIndex: "nombreComercio", key: "nombreComercio", sorter: textSorter((cliente: Cliente) => cliente.nombreComercio ?? ""), render: (nombre?: string) => nombre || "—" },
+    { title: "Segmento comercial", dataIndex: "segmentoComercial", key: "segmentoComercial", sorter: textSorter((cliente: Cliente) => cliente.segmentoComercial ?? ""), render: (segmento?: string) => segmento || "—" },
     { title: "DNI", dataIndex: "dni", key: "dni", sorter: textSorter((cliente: Cliente) => cliente.dni) },
-    { title: "Nombre", dataIndex: "nombre", key: "nombre", sorter: textSorter((cliente: Cliente) => cliente.nombre) },
-    { title: "Email", dataIndex: "email", key: "email", sorter: textSorter((cliente: Cliente) => cliente.email) },
+    { title: "CUIT", dataIndex: "cuit", key: "cuit", sorter: textSorter((cliente: Cliente) => cliente.cuit) },
     { title: "Teléfono", dataIndex: "telefono", key: "telefono", sorter: textSorter((cliente: Cliente) => cliente.telefono) },
+    { title: "Condición de pago", dataIndex: "condicionPago", key: "condicionPago", sorter: textSorter((cliente: Cliente) => cliente.condicionPago ?? ""), render: (condicion?: string) => condicion || "—" },
+    { title: "Email", dataIndex: "email", key: "email", sorter: textSorter((cliente: Cliente) => cliente.email) },
     { title: "Dirección", dataIndex: "direccion", key: "direccion", sorter: textSorter((cliente: Cliente) => cliente.direccion) },
+    { title: "Ciudad", dataIndex: "ciudad", key: "ciudad", sorter: textSorter((cliente: Cliente) => cliente.ciudad ?? ""), render: (ciudad?: string) => ciudad || "—" },
+    { title: "Provincia", dataIndex: "provincia", key: "provincia", sorter: textSorter((cliente: Cliente) => cliente.provincia ?? ""), render: (provincia?: string) => provincia || "—" },
     {
       title: "Acciones",
       key: "acciones",
       render: (_: any, record: Cliente) => (
         <span>
+          <Button type="link" onClick={() => showRecordDetails("Detalle del cliente", record)}>
+            Ver
+          </Button>
           <Button
             type="link"
             onClick={() => {
@@ -166,6 +190,7 @@ const ClientesPage: React.FC = () => {
           onClick={() => {
             setEditingId(null);
             form.resetFields();
+            form.setFieldsValue({ tipoCliente: "Particular" });
             setModalVisible(true);
           }}
         >
@@ -188,6 +213,7 @@ const ClientesPage: React.FC = () => {
         rowKey="id"
         bordered
         style={{ width: "100%" }}
+        scroll={{ x: "max-content" }}
         pagination={{ pageSize: 10 }}
       />
 
@@ -203,6 +229,38 @@ const ClientesPage: React.FC = () => {
         width={800}
       >
         <Form form={form} onFinish={handleSubmit} layout="vertical">
+          <Form.Item
+            name="tipoCliente"
+            label="Tipo de cliente"
+            rules={[{ required: true, message: "Seleccione el tipo de cliente" }]}
+          >
+            <Select placeholder="Seleccione un tipo">
+              <Select.Option value="Particular">Particular</Select.Option>
+              <Select.Option value="Comercio">Comercio</Select.Option>
+              <Select.Option value="Restaurante">Restaurante</Select.Option>
+              <Select.Option value="Distribuidor">Distribuidor</Select.Option>
+            </Select>
+          </Form.Item>
+
+          <Form.Item
+            name="nombre"
+            label="Nombre del cliente o contacto"
+            rules={[{ required: true, message: "El nombre es obligatorio" }]}
+          >
+            <Input />
+          </Form.Item>
+
+          {esClienteComercial && (
+            <Form.Item
+              name="nombreComercio"
+              label="Nombre del comercio"
+              rules={[{ required: true, message: "Ingrese el nombre del comercio" }]}
+              preserve={false}
+            >
+              <Input />
+            </Form.Item>
+          )}
+
           <Form.Item
             name="dni"
             label="DNI"
@@ -228,12 +286,31 @@ const ClientesPage: React.FC = () => {
             <Input placeholder="Ej: 20-12345678-9" />
           </Form.Item>
 
+          {esClienteComercial && (
+            <Form.Item
+              name="segmentoComercial"
+              label="Segmento comercial"
+              rules={[{ required: true, message: "Seleccione el segmento comercial" }]}
+              preserve={false}
+            >
+              <Select placeholder="Seleccione un segmento">
+                <Select.Option value="Minorista">Minorista</Select.Option>
+                <Select.Option value="Mayorista">Mayorista</Select.Option>
+                <Select.Option value="Gastronómica">Gastronómica</Select.Option>
+              </Select>
+            </Form.Item>
+          )}
+
           <Form.Item
-            name="nombre"
-            label="Nombre"
-            rules={[{ required: true, message: "El nombre es obligatorio" }]}
+            name="condicionPago"
+            label="Condición de pago"
+            rules={[{ required: true, message: "Seleccione la condición de pago" }]}
           >
-            <Input />
+            <Select placeholder="Seleccione una condición">
+              <Select.Option value="Efectivo">Efectivo</Select.Option>
+              <Select.Option value="Transferencia">Transferencia</Select.Option>
+              <Select.Option value="Cuenta corriente">Cuenta corriente</Select.Option>
+            </Select>
           </Form.Item>
 
           <Form.Item
@@ -252,6 +329,14 @@ const ClientesPage: React.FC = () => {
           </Form.Item>
 
           <Form.Item name="direccion" label="Dirección">
+            <Input />
+          </Form.Item>
+
+          <Form.Item name="ciudad" label="Ciudad">
+            <Input />
+          </Form.Item>
+
+          <Form.Item name="provincia" label="Provincia">
             <Input />
           </Form.Item>
 

@@ -15,13 +15,45 @@ const clientesIniciales = [
   { id: 3, nombre: "Carlos López" }
 ];
 
-function getClientesRegistrados() {
+type ClienteRegistrado = {
+  id: number;
+  nombre: string;
+  dni?: string;
+  cuit?: string;
+  email?: string;
+  telefono?: string;
+  direccion?: string;
+  ciudad?: string;
+  provincia?: string;
+  tipoCliente?: string;
+  nombreComercio?: string;
+  segmentoComercial?: string;
+  condicionPago?: string;
+};
+
+type DatosCliente = Pick<
+  ClienteRegistrado,
+  | "nombre"
+  | "dni"
+  | "cuit"
+  | "email"
+  | "telefono"
+  | "direccion"
+  | "ciudad"
+  | "provincia"
+  | "tipoCliente"
+  | "nombreComercio"
+  | "segmentoComercial"
+  | "condicionPago"
+>;
+
+function getClientesRegistrados(): ClienteRegistrado[] {
   const saved = localStorage.getItem(CLIENTES_STORAGE_KEY);
   if (!saved) return clientesIniciales;
 
   try {
     const clientes = JSON.parse(saved);
-    return Array.isArray(clientes) ? clientes : clientesIniciales;
+    return Array.isArray(clientes) ? clientes as ClienteRegistrado[] : clientesIniciales;
   } catch {
     return clientesIniciales;
   }
@@ -49,8 +81,13 @@ const comprobantesEjemplo = [
   },
 ];
 
-function calcularTotal(productos: { cantidad: number; precio: number }[]) {
-  return productos.reduce((acc, p) => acc + p.cantidad * p.precio, 0);
+function calcularTotal(productos: { cantidad: number; precio: number }[] = []) {
+  if (!Array.isArray(productos)) return 0;
+
+  return productos.reduce(
+    (acc, producto) => acc + (Number(producto?.cantidad) || 0) * (Number(producto?.precio) || 0),
+    0
+  );
 }
 
 type Producto = { id?: number; nombre: string; cantidad: number; precio: number };
@@ -58,7 +95,8 @@ type Comprobante = {
   id: number;
   fecha: string;
   cliente: string;
-  nroPedido: string;
+  clienteDatos?: DatosCliente;
+  nroPedido?: string;
   productos: Producto[];
 };
 
@@ -74,10 +112,22 @@ const ComprobantesVentaPage: React.FC<ComprobantesVentaPageProps> = ({ abrirNuev
 
   const [showFormModal, setShowFormModal] = useState(false);
   const [editingComprobante, setEditingComprobante] = useState<Comprobante | null>(null);
+  const [isViewingComprobante, setIsViewingComprobante] = useState(false);
   const [busqueda, setBusqueda] = useState("");
   const [clientes, setClientes] = useState(getClientesRegistrados);
   const [productos, setProductos] = useState<ProductoRegistrado[]>(getProductosRegistrados);
   const [form] = Form.useForm();
+  const watchedProductos: Producto[] = Form.useWatch("productos", form) ?? [];
+  const watchedCliente: string | undefined = Form.useWatch("cliente", form);
+  const totalComprobante = calcularTotal(watchedProductos);
+  const clienteRegistrado = clientes.find((cliente) => cliente.nombre === watchedCliente);
+  const clienteSeleccionado =
+    editingComprobante && editingComprobante.cliente === watchedCliente && editingComprobante.clienteDatos
+      ? editingComprobante.clienteDatos
+      : clienteRegistrado;
+
+  const formatCurrency = (value: number) =>
+    new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS" }).format(value);
 
   // Guardar cambios automáticamente
   useEffect(() => {
@@ -99,7 +149,8 @@ const ComprobantesVentaPage: React.FC<ComprobantesVentaPageProps> = ({ abrirNuev
   const comprobantesFiltrados = comprobantes.filter(
     (c) =>
       c.cliente.toLowerCase().includes(busqueda.toLowerCase()) ||
-      c.nroPedido.toLowerCase().includes(busqueda.toLowerCase()) ||
+      c.nroPedido?.toLowerCase().includes(busqueda.toLowerCase()) ||
+      String(c.id).includes(busqueda.toLowerCase()) ||
       c.fecha.includes(busqueda)
   );
 
@@ -121,6 +172,7 @@ const ComprobantesVentaPage: React.FC<ComprobantesVentaPageProps> = ({ abrirNuev
 
   const handleNuevo = () => {
     setEditingComprobante(null);
+    setIsViewingComprobante(false);
     form.resetFields();
     setShowFormModal(true);
   };
@@ -135,22 +187,51 @@ const ComprobantesVentaPage: React.FC<ComprobantesVentaPageProps> = ({ abrirNuev
     const comprobante = comprobantes.find((c) => c.id === id);
     if (comprobante) {
       setEditingComprobante(comprobante);
-      form.setFieldsValue(comprobante);
+      setIsViewingComprobante(false);
+      form.setFieldsValue({
+        ...comprobante,
+        clienteDatos: comprobante.clienteDatos ?? clientes.find((cliente) => cliente.nombre === comprobante.cliente),
+      });
       setShowFormModal(true);
     }
   };
 
+  const handleVer = (comprobante: Comprobante) => {
+    setEditingComprobante(comprobante);
+    setIsViewingComprobante(true);
+    form.setFieldsValue({
+      ...comprobante,
+      clienteDatos: comprobante.clienteDatos ?? clientes.find((cliente) => cliente.nombre === comprobante.cliente),
+    });
+    setShowFormModal(true);
+  };
+
   const handleSubmit = (values: any) => {
+    const clienteDatos =
+      clientes.find((cliente) => cliente.nombre === values.cliente) ??
+      (editingComprobante && editingComprobante.cliente === values.cliente
+        ? editingComprobante.clienteDatos
+        : undefined);
+
     if (editingComprobante) {
       const updated = comprobantes.map((c) =>
-        c.id === editingComprobante.id ? { ...editingComprobante, ...values } : c
+        c.id === editingComprobante.id
+          ? {
+              ...editingComprobante,
+              ...values,
+              clienteDatos,
+            }
+          : c
       );
       setComprobantes(updated);
       message.success("Comprobante actualizado correctamente");
     } else {
+      const id = getNextId(comprobantes);
       const newComprobante: Comprobante = {
-        id: getNextId(comprobantes),
+        id,
         ...values,
+        nroPedido: String(id),
+        clienteDatos,
       };
       setComprobantes([...comprobantes, newComprobante]);
       message.success("Comprobante agregado exitosamente");
@@ -169,10 +250,11 @@ const ComprobantesVentaPage: React.FC<ComprobantesVentaPageProps> = ({ abrirNuev
       sorter: textSorter((comprobante: Comprobante) => comprobante.fecha),
     },
     {
-      title: "Nro Pedido",
+      title: "N.° Comprobante",
       dataIndex: "nroPedido",
       key: "nroPedido",
-      sorter: textSorter((comprobante: Comprobante) => comprobante.nroPedido),
+      sorter: numberSorter((comprobante: Comprobante) => comprobante.id),
+      render: (_: string | undefined, comprobante: Comprobante) => comprobante.id,
     },
     {
       title: "Cliente",
@@ -209,6 +291,9 @@ const ComprobantesVentaPage: React.FC<ComprobantesVentaPageProps> = ({ abrirNuev
       key: "acciones",
       render: (_: any, comprobante: Comprobante) => (
         <Space>
+          <Button type="link" onClick={() => handleVer(comprobante)}>
+            Ver
+          </Button>
           <Button type="link" onClick={() => handleModificar(comprobante.id)}>
             Editar
           </Button>
@@ -230,7 +315,7 @@ const ComprobantesVentaPage: React.FC<ComprobantesVentaPageProps> = ({ abrirNuev
           </Button>
         </div>
         <Input.Search
-          placeholder="Buscar por cliente, número, fecha o producto"
+          placeholder="Buscar por cliente, número o fecha"
           value={busqueda}
           onChange={(e) => setBusqueda(e.target.value)}
           style={{ width: 360 }}
@@ -240,113 +325,213 @@ const ComprobantesVentaPage: React.FC<ComprobantesVentaPageProps> = ({ abrirNuev
 
       <Table columns={columns} dataSource={comprobantesFiltrados} rowKey="id" bordered style={{ width: "100%" }} pagination={{ pageSize: 10 }} />
 
-      {/* Modal de agregar o editar comprobante */}
       <Modal
-        title={editingComprobante ? "Editar Comprobante" : "Registrar Comprobante"}
+        title={null}
+        className="sales-receipt-modal"
         open={showFormModal}
         onCancel={() => {
           setShowFormModal(false);
           setEditingComprobante(null);
+          setIsViewingComprobante(false);
           form.resetFields();
         }}
         footer={null}
-        width={800}
+        width={960}
       >
-        <Form form={form} layout="vertical" onFinish={handleSubmit}>
-          <Form.Item
-            name="fecha"
-            label="Fecha"
-            rules={[{ required: true, message: "Ingrese la fecha" }]}
-          >
-            <Input type="date" />
-          </Form.Item>
+        <Form
+          form={form}
+          layout="vertical"
+          className="sales-receipt-form"
+          onFinish={handleSubmit}
+        >
+          <div className="sales-receipt">
+            <header className="sales-receipt-header">
+              <div>
+                <div className="sales-receipt-company">Fábrica de Pastas</div>
+                <div className="sales-receipt-subtitle">Comprobante de venta</div>
+              </div>
+              <div className="sales-receipt-heading">
+                <h2>Comprobante</h2>
+                <div className="sales-receipt-reference">
+                  <div className="sales-receipt-number">
+                    <strong>N.° de comprobante</strong>
+                    <span>{editingComprobante ? editingComprobante.id : "Se asignará al guardar"}</span>
+                  </div>
+                  <Form.Item
+                    name="fecha"
+                    label="Fecha"
+                    rules={[{ required: true, message: "Ingrese la fecha" }]}
+                  >
+                    <Input type="date" disabled={isViewingComprobante} />
+                  </Form.Item>
+                </div>
+              </div>
+            </header>
 
-          <Form.Item
-            name="nroPedido"
-            label="Número de Pedido"
-            rules={[{ required: true, message: "Ingrese el número de pedido" }]}
-          >
-            <Input />
-          </Form.Item>
-
-          <Form.Item
-            name="cliente"
-            label="Cliente"
-            rules={[{ required: true, message: "Seleccione el cliente" }]}
-          >
-            <Select placeholder="Seleccione un cliente" showSearch optionFilterProp="label">
-              {clientes.map((cliente) => (
-                <Option key={cliente.id} value={cliente.nombre} label={cliente.nombre}>
-                  {cliente.nombre}
-                </Option>
-              ))}
-            </Select>
-          </Form.Item>
-
-          <Form.List name="productos">
-            {(fields, { add, remove }) => (
-              <>
-                <label><strong>Productos</strong></label>
-                {fields.map(({ key, name, ...restField }) => (
-                  <Space key={key} className="product-row" style={{ marginBottom: 8 }} align="baseline">
-                    <Form.Item
-                      {...restField}
-                      name={[name, "nombre"]}
-                      rules={[{ required: true, message: "Seleccione el producto" }]}
-                    >
-                      <Select
-                        placeholder="Seleccione un producto"
-                        showSearch
-                        optionFilterProp="label"
-                        onChange={(nombre) => {
-                          const producto = productos.find((item) => item.nombre === nombre);
-                          form.setFieldValue(["productos", name, "id"], producto?.id);
-                          form.setFieldValue(["productos", name, "precio"], producto?.precio ?? 0);
-                        }}
-                      >
-                        {productos.map((producto) => (
-                          <Option key={producto.id} value={producto.nombre} label={producto.nombre}>
-                            {producto.nombre}
-                          </Option>
-                        ))}
-                      </Select>
-                    </Form.Item>
-                    <Form.Item {...restField} name={[name, "id"]} hidden>
-                      <Input />
-                    </Form.Item>
-                    <Form.Item
-                      {...restField}
-                      name={[name, "cantidad"]}
-                      rules={[{ required: true, message: "Ingrese cantidad" }]}
-                    >
-                      <InputNumber placeholder="Cantidad" min={1} />
-                    </Form.Item>
-                    <Form.Item
-                      {...restField}
-                      name={[name, "precio"]}
-                      rules={[{ required: true, message: "Ingrese precio" }]}
-                    >
-                      <InputNumber placeholder="Precio" min={0} />
-                    </Form.Item>
-                    <Button type="link" danger onClick={() => remove(name)}>
-                      Eliminar
-                    </Button>
-                  </Space>
-                ))}
-                <Form.Item>
-                  <Button type="dashed" onClick={() => add()} block>
-                    Agregar Producto
-                  </Button>
+            <section className="sales-receipt-parties">
+              <div>
+                <h3>Facturar a</h3>
+                <Form.Item
+                  name="cliente"
+                  rules={[{ required: true, message: "Seleccione el cliente" }]}
+                >
+                  <Select
+                    placeholder="Seleccione un cliente"
+                    showSearch
+                    optionFilterProp="label"
+                    disabled={isViewingComprobante}
+                  >
+                    {clientes.map((cliente) => (
+                      <Option key={cliente.id} value={cliente.nombre} label={cliente.nombre}>
+                        {cliente.nombre}
+                      </Option>
+                    ))}
+                  </Select>
                 </Form.Item>
-              </>
-            )}
-          </Form.List>
+              </div>
+              <div className="sales-receipt-client-data">
+                <strong>Datos del cliente <span>(solo lectura)</span></strong>
+                {clienteSeleccionado ? (
+                  <div className="sales-receipt-client-grid">
+                    <div><span>Nombre</span><b>{clienteSeleccionado.nombre || "—"}</b></div>
+                    <div><span>Tipo de cliente</span><b>{clienteSeleccionado.tipoCliente || "—"}</b></div>
+                    {clienteSeleccionado.nombreComercio && (
+                      <div><span>Nombre del comercio</span><b>{clienteSeleccionado.nombreComercio}</b></div>
+                    )}
+                    {clienteSeleccionado.segmentoComercial && (
+                      <div><span>Segmento comercial</span><b>{clienteSeleccionado.segmentoComercial}</b></div>
+                    )}
+                    <div><span>DNI</span><b>{clienteSeleccionado.dni || "—"}</b></div>
+                    <div><span>CUIT</span><b>{clienteSeleccionado.cuit || "—"}</b></div>
+                    <div><span>Teléfono</span><b>{clienteSeleccionado.telefono || "—"}</b></div>
+                    <div><span>Email</span><b>{clienteSeleccionado.email || "—"}</b></div>
+                    <div><span>Dirección</span><b>{clienteSeleccionado.direccion || "—"}</b></div>
+                    <div><span>Ciudad</span><b>{clienteSeleccionado.ciudad || "—"}</b></div>
+                    <div><span>Provincia</span><b>{clienteSeleccionado.provincia || "—"}</b></div>
+                    {clienteSeleccionado.condicionPago && (
+                      <div><span>Condición de pago</span><b>{clienteSeleccionado.condicionPago}</b></div>
+                    )}
+                  </div>
+                ) : (
+                  <span className="sales-receipt-client-placeholder">Seleccione un cliente para ver sus datos</span>
+                )}
+              </div>
+            </section>
 
-          <Form.Item>
-            <Button type="primary" htmlType="submit" block>
-              {editingComprobante ? "Guardar Cambios" : "Crear Comprobante"}
-            </Button>
-          </Form.Item>
+            <section className="sales-receipt-items">
+              <h3>Detalle de productos</h3>
+              <div className="sales-receipt-table">
+                <div className={`sales-receipt-table-header${isViewingComprobante ? " is-viewing" : ""}`}>
+                  <span>Cantidad</span>
+                  <span>Descripción</span>
+                  <span>Precio unitario</span>
+                  <span>Monto</span>
+                  {!isViewingComprobante && <span aria-label="Acciones" />}
+                </div>
+                <Form.List name="productos">
+                  {(fields, { add, remove }) => (
+                    <>
+                      {fields.map(({ key, name, ...restField }) => {
+                        const item = watchedProductos[name];
+                        const amount = (Number(item?.cantidad) || 0) * (Number(item?.precio) || 0);
+                        return (
+                          <div className={`sales-receipt-item-row${isViewingComprobante ? " is-viewing" : ""}`} key={key}>
+                            <Form.Item
+                              {...restField}
+                              name={[name, "cantidad"]}
+                              rules={[{ required: true, message: "Ingrese cantidad" }]}
+                            >
+                              <InputNumber
+                                aria-label="Cantidad"
+                                placeholder="0"
+                                min={1}
+                                disabled={isViewingComprobante}
+                              />
+                            </Form.Item>
+                            <Form.Item
+                              {...restField}
+                              name={[name, "nombre"]}
+                              rules={[{ required: true, message: "Seleccione el producto" }]}
+                            >
+                              <Select
+                                aria-label="Descripción"
+                                placeholder="Seleccione un producto"
+                                showSearch
+                                optionFilterProp="label"
+                                disabled={isViewingComprobante}
+                                onChange={(nombre) => {
+                                  const producto = productos.find((item) => item.nombre === nombre);
+                                  form.setFieldValue(["productos", name, "id"], producto?.id);
+                                  form.setFieldValue(["productos", name, "precio"], producto?.precio ?? 0);
+                                }}
+                              >
+                                {productos.map((producto) => (
+                                  <Option key={producto.id} value={producto.nombre} label={producto.nombre}>
+                                    {producto.nombre}
+                                  </Option>
+                                ))}
+                              </Select>
+                            </Form.Item>
+                            <Form.Item
+                              {...restField}
+                              name={[name, "precio"]}
+                              rules={[{ required: true, message: "Ingrese precio" }]}
+                            >
+                              <InputNumber
+                                aria-label="Precio unitario"
+                                placeholder="$ 0,00"
+                                min={0}
+                                disabled={isViewingComprobante}
+                              />
+                            </Form.Item>
+                            <div className="sales-receipt-line-total">{formatCurrency(amount)}</div>
+                            <Form.Item {...restField} name={[name, "id"]} hidden>
+                              <Input />
+                            </Form.Item>
+                            {!isViewingComprobante && (
+                              <Button type="link" danger onClick={() => remove(name)}>
+                                Quitar
+                              </Button>
+                            )}
+                          </div>
+                        );
+                      })}
+                      {!isViewingComprobante && (
+                        <Button type="dashed" onClick={() => add({ nombre: "", cantidad: 1, precio: 0 })} block>
+                          Agregar producto
+                        </Button>
+                      )}
+                    </>
+                  )}
+                </Form.List>
+              </div>
+            </section>
+
+            <section className="sales-receipt-total">
+              <span>Subtotal</span>
+              <strong>{formatCurrency(totalComprobante)}</strong>
+              <span className="sales-receipt-grand-label">Total</span>
+              <strong className="sales-receipt-grand-total">{formatCurrency(totalComprobante)}</strong>
+            </section>
+
+            <footer className="sales-receipt-footer">
+              <strong>¡Gracias por su compra!</strong>
+              <span>Conserve este comprobante para cualquier consulta sobre su pedido.</span>
+            </footer>
+
+            <div className="sales-receipt-actions">
+              {isViewingComprobante ? (
+                <Button onClick={() => setShowFormModal(false)}>Cerrar</Button>
+              ) : (
+                <>
+                  <Button onClick={() => setShowFormModal(false)}>Cancelar</Button>
+                  <Button type="primary" htmlType="submit">
+                    {editingComprobante ? "Guardar cambios" : "Crear comprobante"}
+                  </Button>
+                </>
+              )}
+            </div>
+          </div>
         </Form>
       </Modal>
     </div>

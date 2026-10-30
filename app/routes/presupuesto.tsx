@@ -17,6 +17,7 @@ import type { ProductoRegistrado } from "../utils/productos";
 import { PageHeader } from "../components/PageHeader";
 import { numberSorter, textSorter } from "../utils/tableSort";
 import { getNextId } from "../utils/recordIds";
+import { showRecordDetails } from "../utils/recordDetails";
 
 const { Option } = Select;
 const LOCAL_STORAGE_KEY = "presupuestos-listado";
@@ -178,6 +179,9 @@ const PresupuestoPages: React.FC = () => {
       key: "acciones",
       render: (_: any, record: Presupuesto) => (
         <Space>
+          <Button type="link" onClick={() => showRecordDetails("Detalle del presupuesto", record)}>
+            Ver
+          </Button>
           <Button type="link" onClick={() => handleEdit(record)}>
             Editar
           </Button>

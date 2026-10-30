@@ -17,6 +17,7 @@ import type { ProductoRegistrado } from "../utils/productos";
 import { PageHeader } from "../components/PageHeader";
 import { numberSorter, textSorter } from "../utils/tableSort";
 import { getNextId } from "../utils/recordIds";
+import { showRecordDetails } from "../utils/recordDetails";
 
 const { Option } = Select;
 const LOCAL_STORAGE_KEY = "ordenes-listado";
@@ -272,6 +273,9 @@ const OrdenesPage: React.FC<OrdenesPageProps> = ({ abrirNuevaOrden = false }) =>
       key: "acciones",
       render: (_: any, record: Orden) => (
         <Space>
+          <Button type="link" onClick={() => showRecordDetails("Detalle de la orden", record)}>
+            Ver
+          </Button>
           <Button type="link" onClick={() => handleEdit(record)}>
             Editar
           </Button>

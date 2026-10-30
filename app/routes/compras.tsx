@@ -18,6 +18,7 @@ import type { ProductoRegistrado } from "../utils/productos";
 import { PageHeader } from "../components/PageHeader";
 import { numberSorter, textSorter } from "../utils/tableSort";
 import { getNextId } from "../utils/recordIds";
+import { showRecordDetails } from "../utils/recordDetails";
 
 const { Option } = Select;
 const LOCAL_STORAGE_KEY = "compras-listado";
@@ -214,6 +215,9 @@ const ComprasPage: React.FC = () => {
       key: "acciones",
       render: (_: any, record: Compra) => (
         <Space>
+          <Button type="link" onClick={() => showRecordDetails("Detalle de la compra", record)}>
+            Ver
+          </Button>
           <Button type="link" onClick={() => handleEdit(record)}>
             Editar
           </Button>

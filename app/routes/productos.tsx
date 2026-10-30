@@ -5,6 +5,7 @@ import { PageHeader } from "../components/PageHeader";
 import { getRubrosRegistrados } from "../utils/rubros";
 import { numberSorter, textSorter } from "../utils/tableSort";
 import { getNextId } from "../utils/recordIds";
+import { showRecordDetails } from "../utils/recordDetails";
 
 type Producto = {
   key: string;
@@ -244,9 +245,14 @@ export default function ProductosPage() {
       title: "Acciones",
       key: "acciones",
       render: (_: unknown, record: Producto) => (
-        <Button type="link" onClick={() => handleEdit(record)}>
-          Editar
-        </Button>
+        <>
+          <Button type="link" onClick={() => showRecordDetails("Detalle del producto", record)}>
+            Ver
+          </Button>
+          <Button type="link" onClick={() => handleEdit(record)}>
+            Editar
+          </Button>
+        </>
       ),
     },
   ];

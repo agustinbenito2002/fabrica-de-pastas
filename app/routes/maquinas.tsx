@@ -13,6 +13,7 @@ import dayjs from "dayjs";
 import { PageHeader } from "../components/PageHeader";
 import { textSorter } from "../utils/tableSort";
 import { getNextId } from "../utils/recordIds";
+import { showRecordDetails } from "../utils/recordDetails";
 
 const { Option } = Select;
 const LOCAL_STORAGE_KEY = "maquinas-listado";
@@ -179,6 +180,9 @@ export default function MaquinasPage() {
       key: "acciones",
       render: (_: any, record: MaquinaRecord) => (
         <>
+          <Button type="link" onClick={() => showRecordDetails("Detalle de la máquina", record)}>
+            Ver
+          </Button>
           <Button type="link" onClick={() => handleEdit(record)}>
             Editar
           </Button>

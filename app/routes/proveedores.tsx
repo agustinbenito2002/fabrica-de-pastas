@@ -3,6 +3,7 @@ import { Table, Button, Modal, Form, Input, message } from "antd";
 import { PageHeader } from "../components/PageHeader";
 import { numberSorter, textSorter } from "../utils/tableSort";
 import { getNextId } from "../utils/recordIds";
+import { showRecordDetails } from "../utils/recordDetails";
 
 const LOCAL_STORAGE_KEY = "proveedores-listado";
 
@@ -137,6 +138,9 @@ const ProveedoresPage: React.FC = () => {
       key: "acciones",
       render: (_: any, record: ProveedorRecord) => (
         <>
+          <Button type="link" onClick={() => showRecordDetails("Detalle del proveedor", record)}>
+            Ver
+          </Button>
           <Button type="link" onClick={() => handleEdit(record)}>
             Editar
           </Button>
